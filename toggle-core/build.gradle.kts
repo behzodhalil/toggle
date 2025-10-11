@@ -33,13 +33,19 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
             implementation("com.charleskorn.kaml:kaml:0.96.0")
+            implementation("org.jetbrains.kotlinx:atomicfu:0.26.1")
+            implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
         }
+
+        androidMain.dependencies {
+            implementation("androidx.compose.runtime:runtime:1.7.5")
+            implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+        }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
-    }
-    sourceSets.commonMain.dependencies {
-
     }
 
 }
