@@ -1,0 +1,599 @@
+package io.behzodhalil.togglecore.core
+
+import io.behzodhalil.togglecore.context.ToggleContext
+import io.behzodhalil.togglecore.logger.ToggleLogger
+import io.behzodhalil.togglecore.resolver.CachingFeatureResolver
+import io.behzodhalil.togglecore.resolver.FeatureResolver
+import io.behzodhalil.togglecore.source.FeatureSource
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.withContext
+import kotlinx.atomicfu.atomic
+
+/**
+ * Provides a unified interface for evaluating feature flag states and managing feature flag configurations.
+ *
+ * Implements a layered resolver pattern with priority-based source composition:
+ *
+ * ```
+ * ┌─────────────────────────────────────┐
+ * │           Toggle                    │
+ * ├─────────────────────────────────────┤
+ * │      CachingFeatureResolver         │
+ * ├─────────────────────────────────────┤
+ * │   FeatureResolver + RuleEvaluator   │
+ * ├─────────────────────────────────────┤
+ * │    FeatureSource (priority-based)   │
+ * └─────────────────────────────────────┘
+ * ```
+ *
+ * ### Source Priority
+ *
+ * Sources are queried in descending priority order:
+ * - **Runtime overrides** (Memory): 200
+ * - **Local configuration** (YAML): 120
+ * - **Remote services**: 80
+ *
+ * ### Usage Example
+ * ```
+ * // Create Toggle instance
+ * val toggle = Toggle {
+ *     sources {
+ *         memory {
+ *             feature(FeatureKey.EXPERIMENTAL_API, true)
+ *         }
+ *         yaml {
+ *             content = """
+ *                 features:
+ *                   experimental_api: true
+ *             """.trimIndent()
+ *         }
+ *     }
+ *
+ *     context {
+ *         userId("user_123")
+ *         country("US")
+ *         appVersion("2.0.0")
+ *     }
+ *
+ *     evaluation {
+ *         percentageRollout(50)
+ *     }
+ *
+ *     debug() // Enable logging
+ * }
+ *
+ * // Check features
+ * if (toggle.isEnabled(FeatureKey.EXPERIMENTAL_API)) {
+ *     applyExperimentalApi()
+ * }
+ *
+ * // Get full flag with metadata
+ * val flag = toggle.value(FeatureKey.BETA_UI)
+ * println("Source: ${flag.source}, Bucket: ${flag.metadata["rollout_bucket"]}")
+ *
+ * // Refresh from sources
+ * scope.launch {
+ *     toggle.refresh()
+ *         .onSuccess { println("Refreshed successfully") }
+ *         .onFailure { println("Refresh failed: $it") }
+ * }
+ *
+ * // Cleanup when done
+ * toggle.close()
+ * ```
+ *
+ * ### Thread Safety
+ *
+ * All public methods are thread-safe:
+ * - Resolver is immutable after construction
+ * - Caching uses thread-safe collections
+ * - Lifecycle state managed with atomic operations
+ *
+ * ### Lifecycle States
+ *
+ * ```
+ * CREATED → ACTIVE → DISPOSED
+ *    ↓         ↓         ↓
+ *  ready   evaluating  error
+ * ```
+ *
+ * @see FeatureResolver
+ * @see FeatureSource
+ * @see FeatureKey
+ */
+class Toggle private constructor(
+    private val resolver: FeatureResolver,
+    private val cachingResolver: CachingFeatureResolver?,
+    private val sources: ImmutableList<FeatureSource>,
+    private val logger: ToggleLogger?,
+    private val scope: CoroutineScope,
+) : AutoCloseable {
+
+    /**
+     * Lifecycle state using atomic for thread-safe transitions.
+     */
+    private val state = atomic(State.ACTIVE)
+
+    /**
+     * Evaluation context for targeting rules.
+     *
+     * Immutable after construction. To change context, create a new Toggle instance.
+     */
+    val context: ToggleContext
+        get() = resolver.context
+
+    /**
+     * Checks if a feature is enabled.
+     *
+     * ## Behavior
+     * - Returns `true` if feature exists and is enabled after evaluation
+     * - Returns `false` if:
+     *   - Feature not found in any source
+     *   - Feature explicitly disabled
+     *   - Evaluation rules disable it (targeting, rollout, etc.)
+     *   - Toggle is disposed
+     *   - Any error occurs
+     *
+     * ## Thread Safety
+     * Safe to call concurrently from multiple threads.
+     *
+     * ## Performance
+     * - First call: Queries sources and evaluates rules
+     * - Subsequent calls: Returns cached result (O(1))
+     *
+     * ## Example
+     * ```kotlin
+     * when {
+     *     toggle.isEnabled(Features.PREMIUM) -> showPremiumFeature()
+     *     toggle.isEnabled(Features.BETA_UI) -> showBetaUI()
+     *     else -> showDefaultUI()
+     * }
+     * ```
+     *
+     * @param feature Type-safe feature key
+     * @return `true` if enabled, `false` otherwise (never throws)
+     */
+    fun isEnabled(feature: FeatureKey): Boolean {
+        if (!isActive()) return false
+
+        return runCatching {
+            value(feature).enabled
+        }.getOrElse { error ->
+            logger?.log("Error checking feature '${feature.value}': ${error.message}", error)
+            false
+        }
+    }
+
+    /**
+     * Checks if a feature is enabled by string key.
+     *
+     * Less type-safe than [isEnabled] with [FeatureKey]. Prefer the type-safe variant.
+     *
+     * @param key Feature key string
+     * @return `true` if enabled, `false` otherwise
+     */
+    fun isEnabled(key: String): Boolean {
+        if (!isActive()) return false
+
+        return runCatching {
+            value(key).enabled
+        }.getOrElse { error ->
+            logger?.log("Error checking feature '$key': ${error.message}", error)
+            false
+        }
+    }
+
+    /**
+     * Gets the complete feature flag with metadata.
+     *
+     * Use this when you need:
+     * - Source information (where the flag came from)
+     * - Metadata (rollout bucket, targeting info, owner, etc.)
+     * - Timestamp (when the flag was created)
+     *
+     * ## Returns
+     * Always returns a [FeatureFlag]:
+     * - If found: Flag from the highest-priority source
+     * - If not found: Disabled default flag
+     * - On error: Disabled default flag
+     *
+     * ## Example
+     * ```kotlin
+     * val flag = toggle.value(Features.EXPERIMENT)
+     *
+     * if (flag.enabled) {
+     *     val source = flag.source
+     *     val variant = flag.metadata["variant"] ?: "control"
+     *     val bucket = flag.metadata["rollout_bucket"]?.toInt() ?: 0
+     *
+     *     analytics.track("experiment_shown", mapOf(
+     *         "source" to source,
+     *         "variant" to variant,
+     *         "bucket" to bucket
+     *     ))
+     * }
+     * ```
+     *
+     * @param key Type-safe feature key
+     * @return Feature flag (never null, never throws)
+     */
+    fun value(key: FeatureKey): FeatureFlag {
+        return value(key.value)
+    }
+
+    /**
+     * Gets the complete feature flag by string key.
+     *
+     * @param key Feature key string
+     * @return Feature flag (never null, never throws)
+     */
+    fun value(key: String): FeatureFlag {
+        if (!isActive()) {
+            return FeatureFlag.disabled(key, source = "disposed")
+        }
+
+        return runCatching {
+            require(key.isNotBlank()) { "Feature key cannot be blank" }
+            resolver.resolve(key)
+        }.getOrElse { error ->
+            logger?.log("Failed to resolve feature '$key': ${error.message}", error)
+            FeatureFlag.disabled(key, source = "error")
+        }
+    }
+
+    /**
+     * Gets all registered features with their current values.
+     *
+     * ## Use Cases
+     * - Admin/debug UI showing all features
+     * - Feature auditing and compliance
+     * - Testing and validation
+     * - Documentation generation
+     *
+     * ## Performance
+     * Evaluates all features registered via [FeatureKey]. If you have many features,
+     * this can be expensive. Results are cached, but first call may take time.
+     *
+     * ## Example
+     * ```kotlin
+     * // Debug panel
+     * fun showFeatureDebugPanel() {
+     *     val features = toggle.values()
+     *     features.forEach { (key, flag) ->
+     *         println("$key: enabled=${flag.enabled}, source=${flag.source}")
+     *     }
+     * }
+     * ```
+     *
+     * @return Immutable map of feature key to flag
+     */
+    fun values(): Map<String, FeatureFlag> {
+        if (!isActive()) {
+            return emptyMap()
+        }
+
+        return runCatching {
+            FeatureKey.registry.associate { feature ->
+                feature.value to value(feature)
+            }
+        }.getOrElse { error ->
+            logger?.log("Failed to get all features: ${error.message}", error)
+            emptyMap()
+        }
+    }
+
+    /**
+     * Refreshes all sources and clears the cache.
+     *
+     * ## Process
+     * 1. Clear resolution cache
+     * 2. Call [FeatureSource.refresh] on each source in parallel
+     * 3. Collect and log results
+     *
+     * ## Error Handling
+     * - Individual source failures are logged but don't fail the operation
+     * - Returns [Result.failure] only if **all** sources fail
+     * - Partial success is considered successful
+     *
+     * ## Thread Safety
+     * Safe to call concurrently. Multiple simultaneous refreshes are serialized.
+     *
+     * ## Example: Periodic Refresh
+     * ```kotlin
+     * class FeatureManager(private val toggle: Toggle) {
+     *     private val refreshScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+     *
+     *     fun startPeriodicRefresh(interval: Duration = 5.minutes) {
+     *         refreshScope.launch {
+     *             while (isActive) {
+     *                 delay(interval)
+     *                 toggle.refresh()
+     *                     .onSuccess { logger.info("Features refreshed") }
+     *                     .onFailure { logger.error("Refresh failed", it) }
+     *             }
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * @return [Result.success] if at least one source refreshed, [Result.failure] if all failed
+     */
+    suspend fun refresh(): Result<Unit> = runCatching {
+        checkActive()
+
+        withContext(Dispatchers.Default) {
+            logger?.log("Starting refresh of ${sources.size} source(s)")
+
+            // Clear cache before refresh
+            cachingResolver?.invalidateAll()
+
+            val results = mutableListOf<SourceRefreshResult>()
+
+            // Refresh each source
+            sources.forEach { source ->
+                val result = try {
+                    source.refresh()
+                    SourceRefreshResult.Success(source.sourceName)
+                } catch (error: Exception) {
+                    SourceRefreshResult.Failure(source.sourceName, error)
+                }
+                results.add(result)
+            }
+
+            // Log individual results
+            results.forEach { result ->
+                when (result) {
+                    is SourceRefreshResult.Success ->
+                        logger?.log("✓ Refreshed source: ${result.sourceName}")
+
+                    is SourceRefreshResult.Failure ->
+                        logger?.log(
+                            "✗ Failed to refresh '${result.sourceName}': ${result.error.message}",
+                            result.error
+                        )
+                }
+            }
+
+            // Collect failures
+            val failures = results.filterIsInstance<SourceRefreshResult.Failure>()
+
+            // Fail only if ALL sources failed
+            if (failures.size == sources.size && failures.isNotEmpty()) {
+                throw RefreshException(
+                    message = "All ${sources.size} source(s) failed to refresh",
+                    failures = failures.map { it.error }
+                )
+            }
+
+            val successCount = results.size - failures.size
+            logger?.log("Refresh complete: $successCount/${results.size} source(s) succeeded")
+        }
+    }
+
+    /**
+     * Invalidates the cached result for a specific feature.
+     *
+     * Next call to [value] or [isEnabled] will re-query sources and re-evaluate rules.
+     *
+     * ## Use Cases
+     * - Source changed for a specific feature
+     * - Testing different values
+     * - Manual cache invalidation
+     * - Debugging evaluation issues
+     *
+     * ## Example
+     * ```kotlin
+     * // Update feature in memory source
+     * memorySource.setFeature(Features.BETA, true)
+     *
+     * // Invalidate cache to pick up change
+     * toggle.invalidate(Features.BETA)
+     *
+     * // Next call will re-evaluate
+     * val isBeta = toggle.isEnabled(Features.BETA) // true
+     * ```
+     *
+     * @param key Feature key to invalidate
+     */
+    fun invalidate(key: FeatureKey) {
+        invalidate(key.value)
+    }
+
+    /**
+     * Invalidates the cached result for a specific feature by string key.
+     *
+     * @param key Feature key string to invalidate
+     */
+    fun invalidate(key: String) {
+        if (!isActive()) return
+
+        cachingResolver?.invalidate(key)
+        logger?.log("Invalidated cache for feature: $key")
+    }
+
+    /**
+     * Invalidates all cached feature results.
+     *
+     * More efficient than calling [invalidate] for each feature individually.
+     *
+     * @see invalidate
+     */
+    fun invalidateAll() {
+        if (!isActive()) return
+
+        cachingResolver?.invalidateAll()
+        logger?.log("Invalidated all cached features")
+    }
+
+    /**
+     * Checks if Toggle is active and ready to evaluate features.
+     *
+     * @return `true` if active, `false` if disposed
+     */
+    fun isActive(): Boolean = state.value == State.ACTIVE
+
+    /**
+     * Checks if Toggle has been disposed.
+     *
+     * @return `true` if disposed, `false` if active
+     */
+    fun isDisposed(): Boolean = state.value == State.DISPOSED
+
+    /**
+     * Disposes Toggle and releases all resources.
+     *
+     * ## Cleanup Actions
+     * 1. Transition to DISPOSED state (atomic)
+     * 2. Clear resolution cache
+     * 3. Close all feature sources
+     * 4. Cancel coroutine scope
+     *
+     * ## Post-Disposal Behavior
+     * After disposal:
+     * - [isEnabled] returns `false`
+     * - [value] returns disabled flag
+     * - [refresh] does nothing
+     * - Multiple calls to [close] are safe (idempotent)
+     *
+     * ## Example: Resource Management
+     * ```kotlin
+     * class Application : AutoCloseable {
+     *     private val toggle = Toggle { /* ... */ }
+     *
+     *     override fun close() {
+     *         toggle.close() // Automatic cleanup
+     *     }
+     * }
+     *
+     * // Usage with use { }
+     * Toggle { /* ... */ }.use { toggle ->
+     *     toggle.isEnabled(Features.FEATURE)
+     * } // Automatically closed
+     * ```
+     */
+    override fun close() {
+        // Atomic state transition
+        val wasActive = state.compareAndSet(State.ACTIVE, State.DISPOSED)
+        if (!wasActive) {
+            logger?.log("Toggle already disposed")
+            return
+        }
+
+        logger?.log("Disposing Toggle...")
+
+        // Clear cache
+        runCatching {
+            cachingResolver?.invalidateAll()
+        }.onFailure { error ->
+            logger?.log("Error clearing cache during disposal: ${error.message}", error)
+        }
+
+        // Close sources
+        sources.forEach { source ->
+            runCatching {
+                source.close()
+                logger?.log("Closed source: ${source.sourceName}")
+            }.onFailure { error ->
+                logger?.log(
+                    "Failed to close source '${source.sourceName}': ${error.message}",
+                    error
+                )
+            }
+        }
+
+        // Cancel coroutine scope
+        runCatching {
+            scope.cancel()
+        }.onFailure { error ->
+            logger?.log("Error cancelling scope: ${error.message}", error)
+        }
+
+        logger?.log("Toggle disposed successfully")
+    }
+
+    private fun checkActive() {
+        check(isActive()) {
+            "Toggle has been disposed. Create a new instance to continue using feature flags."
+        }
+    }
+
+    /**
+     * Lifecycle state for Toggle.
+     */
+    private enum class State {
+        /** Toggle is active and ready for feature evaluation. */
+        ACTIVE,
+
+        /** Toggle has been disposed and cannot be used. */
+        DISPOSED
+    }
+
+    /**
+     * Result of refreshing a single source.
+     */
+    private sealed interface SourceRefreshResult {
+        data class Success(val sourceName: String) : SourceRefreshResult
+        data class Failure(val sourceName: String, val error: Exception) : SourceRefreshResult
+    }
+
+    companion object {
+        /**
+         * Creates a Toggle instance.
+         *
+         *
+         * @param resolver Feature resolver (should be wrapped in [CachingFeatureResolver])
+         * @param sources Immutable list of feature sources
+         * @param logger Optional logger for observability
+         * @param scope Coroutine scope for async operations
+         * @return Configured Toggle instance
+         */
+        internal fun create(
+            resolver: FeatureResolver,
+            sources: List<FeatureSource>,
+            logger: ToggleLogger?,
+            scope: CoroutineScope,
+        ): Toggle {
+            // Extract caching resolver for invalidation support
+            val cachingResolver = resolver as? CachingFeatureResolver
+
+            return Toggle(
+                resolver = resolver,
+                cachingResolver = cachingResolver,
+                sources = sources.toImmutableList(),
+                logger = logger,
+                scope = scope
+            )
+        }
+    }
+}
+
+/**
+ * Exception thrown when all sources fail during refresh.
+ *
+ * Contains the list of individual failures for diagnostics.
+ *
+ * @property failures List of exceptions from each failed source
+ */
+class RefreshException(
+    message: String,
+    val failures: List<Exception>,
+) : RuntimeException(
+    message,
+    failures.firstOrNull()
+) {
+    override fun toString(): String {
+        return buildString {
+            append("RefreshException: $message")
+            if (failures.isNotEmpty()) {
+                append("\nFailures:")
+                failures.forEachIndexed { index, error ->
+                    append("\n  ${index + 1}. ${error::class.simpleName}: ${error.message}")
+                }
+            }
+        }
+    }
+}
