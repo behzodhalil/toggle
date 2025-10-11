@@ -25,6 +25,7 @@ import kotlin.time.ExperimentalTime
  * @property source Source that provided this flag (e.g., "remote", "yaml", "memory")
  * @property metadata Immutable map of additional contextual information
  * @property timestamp Unix timestamp (milliseconds) when flag was created/evaluated
+ *
  * @see FeatureKey
  */
 @OptIn(ExperimentalTime::class)

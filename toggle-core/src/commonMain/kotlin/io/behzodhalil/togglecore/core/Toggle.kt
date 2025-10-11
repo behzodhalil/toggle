@@ -1,6 +1,7 @@
 package io.behzodhalil.togglecore.core
 
 import io.behzodhalil.togglecore.context.ToggleContext
+import io.behzodhalil.togglecore.error.RefreshException
 import io.behzodhalil.togglecore.logger.ToggleLogger
 import io.behzodhalil.togglecore.resolver.CachingFeatureResolver
 import io.behzodhalil.togglecore.resolver.FeatureResolver
@@ -86,13 +87,6 @@ import kotlinx.atomicfu.atomic
  * toggle.close()
  * ```
  *
- * ### Thread Safety
- *
- * All public methods are thread-safe:
- * - Resolver is immutable after construction
- * - Caching uses thread-safe collections
- * - Lifecycle state managed with atomic operations
- *
  * ### Lifecycle States
  *
  * ```
@@ -128,22 +122,6 @@ class Toggle private constructor(
 
     /**
      * Checks if a feature is enabled.
-     *
-     * ## Behavior
-     * - Returns `true` if feature exists and is enabled after evaluation
-     * - Returns `false` if:
-     *   - Feature not found in any source
-     *   - Feature explicitly disabled
-     *   - Evaluation rules disable it (targeting, rollout, etc.)
-     *   - Toggle is disposed
-     *   - Any error occurs
-     *
-     * ## Thread Safety
-     * Safe to call concurrently from multiple threads.
-     *
-     * ## Performance
-     * - First call: Queries sources and evaluates rules
-     * - Subsequent calls: Returns cached result (O(1))
      *
      * ## Example
      * ```kotlin
@@ -195,15 +173,9 @@ class Toggle private constructor(
      * - Metadata (rollout bucket, targeting info, owner, etc.)
      * - Timestamp (when the flag was created)
      *
-     * ## Returns
-     * Always returns a [FeatureFlag]:
-     * - If found: Flag from the highest-priority source
-     * - If not found: Disabled default flag
-     * - On error: Disabled default flag
-     *
-     * ## Example
+     * ### Example
      * ```kotlin
-     * val flag = toggle.value(Features.EXPERIMENT)
+     * val flag = toggle.value(FeatureKey.of("EXPERIMENT"))
      *
      * if (flag.enabled) {
      *     val source = flag.source
@@ -248,17 +220,13 @@ class Toggle private constructor(
     /**
      * Gets all registered features with their current values.
      *
-     * ## Use Cases
+     * ### Use Cases
      * - Admin/debug UI showing all features
      * - Feature auditing and compliance
      * - Testing and validation
      * - Documentation generation
      *
-     * ## Performance
-     * Evaluates all features registered via [FeatureKey]. If you have many features,
-     * this can be expensive. Results are cached, but first call may take time.
-     *
-     * ## Example
+     * ### Example
      * ```kotlin
      * // Debug panel
      * fun showFeatureDebugPanel() {
@@ -289,36 +257,10 @@ class Toggle private constructor(
     /**
      * Refreshes all sources and clears the cache.
      *
-     * ## Process
+     * ### Process
      * 1. Clear resolution cache
      * 2. Call [FeatureSource.refresh] on each source in parallel
      * 3. Collect and log results
-     *
-     * ## Error Handling
-     * - Individual source failures are logged but don't fail the operation
-     * - Returns [Result.failure] only if **all** sources fail
-     * - Partial success is considered successful
-     *
-     * ## Thread Safety
-     * Safe to call concurrently. Multiple simultaneous refreshes are serialized.
-     *
-     * ## Example: Periodic Refresh
-     * ```kotlin
-     * class FeatureManager(private val toggle: Toggle) {
-     *     private val refreshScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-     *
-     *     fun startPeriodicRefresh(interval: Duration = 5.minutes) {
-     *         refreshScope.launch {
-     *             while (isActive) {
-     *                 delay(interval)
-     *                 toggle.refresh()
-     *                     .onSuccess { logger.info("Features refreshed") }
-     *                     .onFailure { logger.error("Refresh failed", it) }
-     *             }
-     *         }
-     *     }
-     * }
-     * ```
      *
      * @return [Result.success] if at least one source refreshed, [Result.failure] if all failed
      */
@@ -379,13 +321,13 @@ class Toggle private constructor(
      *
      * Next call to [value] or [isEnabled] will re-query sources and re-evaluate rules.
      *
-     * ## Use Cases
+     * ### Use Cases
      * - Source changed for a specific feature
      * - Testing different values
      * - Manual cache invalidation
      * - Debugging evaluation issues
      *
-     * ## Example
+     * ### Example
      * ```kotlin
      * // Update feature in memory source
      * memorySource.setFeature(Features.BETA, true)
@@ -446,34 +388,6 @@ class Toggle private constructor(
     /**
      * Disposes Toggle and releases all resources.
      *
-     * ## Cleanup Actions
-     * 1. Transition to DISPOSED state (atomic)
-     * 2. Clear resolution cache
-     * 3. Close all feature sources
-     * 4. Cancel coroutine scope
-     *
-     * ## Post-Disposal Behavior
-     * After disposal:
-     * - [isEnabled] returns `false`
-     * - [value] returns disabled flag
-     * - [refresh] does nothing
-     * - Multiple calls to [close] are safe (idempotent)
-     *
-     * ## Example: Resource Management
-     * ```kotlin
-     * class Application : AutoCloseable {
-     *     private val toggle = Toggle { /* ... */ }
-     *
-     *     override fun close() {
-     *         toggle.close() // Automatic cleanup
-     *     }
-     * }
-     *
-     * // Usage with use { }
-     * Toggle { /* ... */ }.use { toggle ->
-     *     toggle.isEnabled(Features.FEATURE)
-     * } // Automatically closed
-     * ```
      */
     override fun close() {
         // Atomic state transition
@@ -571,29 +485,3 @@ class Toggle private constructor(
     }
 }
 
-/**
- * Exception thrown when all sources fail during refresh.
- *
- * Contains the list of individual failures for diagnostics.
- *
- * @property failures List of exceptions from each failed source
- */
-class RefreshException(
-    message: String,
-    val failures: List<Exception>,
-) : RuntimeException(
-    message,
-    failures.firstOrNull()
-) {
-    override fun toString(): String {
-        return buildString {
-            append("RefreshException: $message")
-            if (failures.isNotEmpty()) {
-                append("\nFailures:")
-                failures.forEachIndexed { index, error ->
-                    append("\n  ${index + 1}. ${error::class.simpleName}: ${error.message}")
-                }
-            }
-        }
-    }
-}
