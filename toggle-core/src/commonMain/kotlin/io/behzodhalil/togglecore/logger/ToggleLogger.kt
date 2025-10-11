@@ -1,4 +1,4 @@
-package io.behzodhalil.togglecore
+package io.behzodhalil.togglecore.logger
 
 
 interface ToggleLogger {
