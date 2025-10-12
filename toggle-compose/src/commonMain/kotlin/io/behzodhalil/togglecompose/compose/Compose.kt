@@ -19,11 +19,6 @@ import io.behzodhalil.togglecore.observer.ObservableToggleScope
  * This is the primary API for observing feature flags in Jetpack Compose UIs.
  * The returned state will automatically trigger recomposition when the feature changes.
  *
- * ### Lifecycle Awareness
- * - Uses [collectAsStateWithLifecycle] for lifecycle-aware collection
- * - Automatically stops collection when the composable leaves the composition
- * - Respects the lifecycle of the current [LocalLifecycleOwner]
- *
  * ## Example: Conditional UI
  * ```kotlin
  * @Composable
@@ -72,7 +67,7 @@ fun ObservableToggle.observeAsStateNonLifecycle(feature: FeatureKey): State<Bool
  *
  * The Toggle will be disposed when the composable leaves the composition.
  *
- * ## Example
+ * ### Example
  * ```kotlin
  * @Composable
  * fun App() {
@@ -139,7 +134,7 @@ fun rememberToggle(builder: ToggleScope.() -> Unit): Toggle {
  * }
  * ```
  *
- * ## Example: Custom Configuration
+ * ### Example: Custom Configuration
  * ```kotlin
  * @Composable
  * fun App() {
