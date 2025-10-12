@@ -20,16 +20,9 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Installation](#installation)
 - [Architecture](#architecture)
+- [Installation](#installation)
 - [Documentation](#documentation)
-    - [Getting Started](#getting-started)
-    - [Sources](#sources)
-    - [Contextual Evaluation](#contextual-evaluation)
-    - [Rule Evaluators](#rule-evaluators)
-    - [Observable Toggle](#observable-toggle)
-    - [Compose Integration](#compose-integration)
-
 - [License](#license)
 
 ## Overview
@@ -89,8 +82,6 @@ Toggle follows a **layered architecture** with clear separation of concerns:
 ---
 
 ## Installation
-
-Toggle is published to Maven Central.
 
 ### Gradle (Kotlin DSL)
 
