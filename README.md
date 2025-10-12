@@ -4,13 +4,13 @@
 
 <p align="center">
   <a href="https://github.com/behzodhalil/toggle/releases">
-    <img src="https://img.shields.io/github/v/release/behzodhalil/toggle?style=flat-square" alt="Release">
+    <img src="https://img.shields.io/github/v/release/behzodhalil/toggle" alt="Release">
   </a>
   <a href="https://opensource.org/licenses/Apache-2.0">
-    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="License">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License">
   </a>
   <a href="https://kotlinlang.org">
-    <img src="https://img.shields.io/badge/kotlin-2.0.0-blue.svg?logo=kotlin&style=flat-square" alt="Kotlin">
+    <img src="https://img.shields.io/badge/kotlin-2.0.0-blue.svg?logo=kotlin" alt="Kotlin">
   </a>
   <a href="https://github.com/behzodhalil/toggle">
     <img src="https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20JVM-lightgrey.svg?style=flat-square" alt="Platform">
