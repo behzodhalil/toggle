@@ -19,7 +19,7 @@ import io.behzodhalil.togglecore.observer.ObservableToggleScope
  * This is the primary API for observing feature flags in Jetpack Compose UIs.
  * The returned state will automatically trigger recomposition when the feature changes.
  *
- * ## Example: Conditional UI
+ * ### Example
  * ```kotlin
  * @Composable
  * fun ProfileScreen(observable: ObservableToggle) {

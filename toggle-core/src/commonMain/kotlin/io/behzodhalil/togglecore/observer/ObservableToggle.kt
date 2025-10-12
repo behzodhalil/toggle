@@ -36,8 +36,6 @@ import kotlin.time.ExperimentalTime
  * It provides both modern reactive patterns (StateFlow/SharedFlow) and callback-based observers
  * for maximum flexibility across different architectural styles.
  *
- * ### Architecture
- *
  * ```
  * ┌─────────────────────────────────────┐
  * │         ObservableToggle            │
@@ -49,7 +47,7 @@ import kotlin.time.ExperimentalTime
  * └─────────────────────────────────────┘
  * ```
  *
- * ## Usage Example
+ * ### Example
  *
  * ```kotlin
  * // Create with builder
@@ -86,13 +84,6 @@ import kotlin.time.ExperimentalTime
  * observable.close()
  * ```
  *
- * ## Thread Safety
- *
- * All public methods are thread-safe:
- * - Flow emissions use atomic operations
- * - Observer map uses concurrent collections
- * - State transitions are atomic
- *
  * @see Toggle
  * @see FeatureKey
  * @see FeatureChangeEvent
@@ -104,12 +95,7 @@ interface ObservableToggle : AutoCloseable {
      * This [StateFlow] emits a new immutable map whenever any feature changes.
      * The map contains only registered features from [FeatureKey.registry].
      *
-     * ## Characteristics
-     * - **Conflated**: Only the latest state is retained
-     * - **Hot**: Always has a current value
-     * - **Immutable**: Safe to share across threads
-     *
-     * ## Example: Observe All Features
+     * ### Example
      * ```kotlin
      * observable.features
      *     .onEach { allFeatures ->
@@ -127,13 +113,7 @@ interface ObservableToggle : AutoCloseable {
      * This [SharedFlow] emits [FeatureChangeEvent] whenever a feature's state changes,
      * including old value, new value, and timestamp.
      *
-     * ## Characteristics
-     * - **Hot**: Starts emitting immediately
-     * - **No replay**: Only new changes are delivered
-     * - **Buffered**: Configurable buffer prevents backpressure
-     * - **Drop oldest**: On buffer overflow, oldest events are dropped
-     *
-     * ## Example: Analytics Tracking
+     * ### Example
      * ```kotlin
      * observable.changes
      *     .onEach { event ->
@@ -155,12 +135,7 @@ interface ObservableToggle : AutoCloseable {
      * This is a convenience method that delegates to the underlying [Toggle].
      * Use this for imperative checks where reactive observation is not needed.
      *
-     * ## Return Behavior
-     * - Returns `true` if feature exists and is enabled
-     * - Returns `false` if feature is disabled, not found, or toggle is closed
-     * - Never throws exceptions
-     *
-     * ## Example
+     * ### Example
      * ```kotlin
      * fun processRequest() {
      *     if (observable.isEnabled(Features.RATE_LIMITING)) {
@@ -191,13 +166,7 @@ interface ObservableToggle : AutoCloseable {
      * Returns a [StateFlow] that emits the current value immediately and then on every change.
      * The flow is cached per feature key for efficiency.
      *
-     * ## Characteristics
-     * - **Hot**: Shares a single upstream connection
-     * - **Stateful**: Always has current value
-     * - **Lazy**: Starts collection on first subscriber
-     * - **Distinct**: Only emits on actual state changes
-     *
-     * ## Example: UI Binding
+     * ## Example
      * ```kotlin
      * // In ViewModel
      * val isDarkMode: StateFlow<Boolean> =
@@ -234,20 +203,7 @@ interface ObservableToggle : AutoCloseable {
     /**
      * Refreshes all features from their underlying sources.
      *
-     * This operation:
-     * 1. Clears internal caches
-     * 2. Calls refresh on all [Toggle] sources
-     * 3. Re-evaluates all features
-     * 4. Emits change events for modified features
-     *
-     * ## Concurrency
-     * Safe to call concurrently. Multiple refreshes are serialized internally.
-     *
-     * ## Error Handling
-     * Individual source failures don't fail the entire operation.
-     * Returns failure only if all sources fail.
-     *
-     * ## Example: Periodic Refresh
+     * ### Example
      * ```kotlin
      * scope.launch {
      *     while (isActive) {
@@ -312,7 +268,7 @@ interface ObservableToggle : AutoCloseable {
 }
 
 /**
- * DSL builder for [ObservableToggle] configuration.
+ * Builder for [ObservableToggle] configuration.
  *
  * Provides a fluent API for constructing [ObservableToggle] instances with
  * sensible defaults and type-safe configuration.
