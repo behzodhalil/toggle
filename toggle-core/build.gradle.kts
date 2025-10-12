@@ -1,4 +1,3 @@
-import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 import kotlin.apply
@@ -80,18 +79,19 @@ localProperties.forEach { key, value ->
         keyString.startsWith("signing.") -> {
             if (keyString == "signing.secretKeyRingFile") {
                 val keyFile = rootProject.file(value.toString())
-                ext[keyString] = keyFile.absolutePath
+                extra[keyString] = keyFile.absolutePath
             } else {
-                ext[keyString] = value
+                extra[keyString] = value
             }
         }
         keyString == "mavenCentralUsername" || keyString == "mavenCentralPassword" -> {
-            ext[keyString] = value
+            extra[keyString] = value
+            println("Loaded $keyString: ${if (keyString.contains("Password")) "***" else value}")
         }
     }
 }
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
+    publishToMavenCentral()
     signAllPublications()
 }

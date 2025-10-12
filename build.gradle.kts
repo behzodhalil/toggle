@@ -6,14 +6,16 @@ plugins {
     alias(libs.plugins.compose.multiplatform).apply(false)
     alias(libs.plugins.android.kotlin.multiplatform.library) apply false
     alias(libs.plugins.vanniktech.publish) apply false
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.18.1"
 }
 
 allprojects {
-    group = "io.behzodhalil"
+    group = "io.github.behzodhalil"
     version = "0.1.0"
 
     repositories {
         google()
+
         mavenCentral()
     }
 }

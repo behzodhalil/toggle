@@ -1,4 +1,4 @@
-import com.vanniktech.maven.publish.SonatypeHost
+
 import java.util.Properties
 
 plugins {
@@ -115,6 +115,6 @@ localProperties.forEach { key, value ->
 
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
+    publishToMavenCentral()
     signAllPublications()
 }
