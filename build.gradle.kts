@@ -5,4 +5,19 @@ plugins {
     kotlin("plugin.serialization") version "2.2.0"
     alias(libs.plugins.compose.multiplatform).apply(false)
     alias(libs.plugins.android.kotlin.multiplatform.library) apply false
+    alias(libs.plugins.vanniktech.publish) apply false
+}
+
+allprojects {
+    group = "io.behzodhalil"
+    version = "0.1.0"
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+tasks.register("clean", Delete::class) {
+    delete(rootProject.buildDir)
 }

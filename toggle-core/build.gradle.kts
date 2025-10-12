@@ -1,9 +1,13 @@
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import kotlin.apply
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     kotlin("plugin.serialization")
+    alias(libs.plugins.vanniktech.publish)
 }
 
 kotlin {
@@ -15,6 +19,7 @@ kotlin {
                 }
             }
         }
+        publishLibraryVariants("release")
     }
 
     listOf(
@@ -60,4 +65,33 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(localPropertiesFile.inputStream())
+    }
+}
+
+localProperties.forEach { key, value ->
+    val keyString = key.toString()
+    when {
+        keyString.startsWith("signing.") -> {
+            if (keyString == "signing.secretKeyRingFile") {
+                val keyFile = rootProject.file(value.toString())
+                ext[keyString] = keyFile.absolutePath
+            } else {
+                ext[keyString] = value
+            }
+        }
+        keyString == "mavenCentralUsername" || keyString == "mavenCentralPassword" -> {
+            ext[keyString] = value
+        }
+    }
+}
+
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
+    signAllPublications()
 }

@@ -9,6 +9,7 @@ runner = "1.7.0"
 core = "1.7.0"
 junit = "1.3.0"
 compose-multiplatform = "1.9.0"
+vanniktech-publish = "0.28.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -32,3 +33,4 @@ kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+vanniktech-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
