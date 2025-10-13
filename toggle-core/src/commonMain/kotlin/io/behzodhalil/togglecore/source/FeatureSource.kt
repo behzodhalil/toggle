@@ -13,39 +13,39 @@ import io.behzodhalil.togglecore.core.FeatureFlag
  * }
  * ```
  */
-interface FeatureSource : AutoCloseable {
+public interface FeatureSource : AutoCloseable {
 
     /**
      * Source identifier for logging and debugging.
      *
      * Examples: "memory", "yaml-config", "firebase-remote-config"
      */
-    val sourceName: String
+    public val sourceName: String
 
     /**
      * Priority for source ordering. Higher = first.
      */
-    val priority: Int get() = DEFAULT_PRIORITY
+    public val priority: Int get() = DEFAULT_PRIORITY
 
 
     /**
      * Get feature by key.
      */
-    fun get(key: String): FeatureFlag?
+    public fun get(key: String): FeatureFlag?
 
     /**
      * Reload source data.
      */
-    suspend fun refresh(): Unit = Unit
+    public suspend fun refresh(): Unit = Unit
 
     /**
      * Retrieve all features from this source.
      */
-    fun getAll(): List<FeatureFlag> = emptyList()
+    public fun getAll(): List<FeatureFlag> = emptyList()
 
-    override fun close() = Unit
+    override fun close(): Unit = Unit
 
-    companion object {
-        const val DEFAULT_PRIORITY = 0
+    public companion object {
+        public const val DEFAULT_PRIORITY: Int = 0
     }
 }

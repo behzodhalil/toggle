@@ -4,7 +4,7 @@ import io.behzodhalil.togglecore.context.ToggleContext
 import io.behzodhalil.togglecore.core.FeatureFlag
 import kotlin.math.abs
 
-class PercentageRolloutEvaluator : RuleEvaluator {
+public class PercentageRolloutEvaluator : RuleEvaluator {
     override fun evaluate(flag: FeatureFlag, context: ToggleContext): FeatureFlag {
         if (!flag.enabled) return flag
 

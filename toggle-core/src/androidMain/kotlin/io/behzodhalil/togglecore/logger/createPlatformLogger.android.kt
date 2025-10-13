@@ -2,7 +2,7 @@ package io.behzodhalil.togglecore.logger
 
 import android.util.Log
 
-actual fun createPlatformLogger(): ToggleLogger = object : ToggleLogger {
+public actual fun createPlatformLogger(): ToggleLogger = object : ToggleLogger {
 
     override fun log(message: String, throwable: Throwable?) {
         if (throwable != null) {

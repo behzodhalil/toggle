@@ -1,0 +1,17 @@
+complexity:
+  CyclomaticComplexMethod:
+    threshold: 15
+  LongMethod:
+    threshold: 60
+
+naming:
+  FunctionNaming:
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+
+style:
+  MaxLineLength:
+    maxLineLength: 120
+
+potential-bugs:
+  EqualsWithHashCodeExist:
+    active: true

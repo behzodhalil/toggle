@@ -1,6 +1,6 @@
 package io.behzodhalil.togglecore.util
 
-class JvmResourceReader : ResourceReader {
+public class JvmResourceReader : ResourceReader {
     override fun readText(path: String): String {
         val normalizedPath = if (path.startsWith("/")) path else "/$path"
 
@@ -14,4 +14,4 @@ class JvmResourceReader : ResourceReader {
     }
 }
 
-actual fun getResourceReader(): ResourceReader = JvmResourceReader()
+public actual fun getResourceReader(): ResourceReader = JvmResourceReader()

@@ -31,19 +31,19 @@ import kotlinx.collections.immutable.toImmutableList
  * - No shared mutable state
  * @see DefaultFeatureResolver
  */
-interface FeatureResolver {
+public interface FeatureResolver {
     /**
      * Context for feature evaluation.
      *
      * Provides user, environment, and custom attributes for targeting rules.
      * Context should be immutable or effectively immutable.
      */
-    val context: ToggleContext
+    public val context: ToggleContext
 
     /**
      * Resolves a feature flag by key.
      */
-    fun resolve(key: String): FeatureFlag
+    public fun resolve(key: String): FeatureFlag
 
     /**
      * Resolves a feature flag using a type-safe key.
@@ -53,7 +53,7 @@ interface FeatureResolver {
      * @param key Type-safe feature key
      * @return The resolved feature flag
      */
-    fun resolve(key: FeatureKey): FeatureFlag = resolve(key.value)
+    public fun resolve(key: FeatureKey): FeatureFlag = resolve(key.value)
 
     /**
      * Batch resolves multiple feature flags.
@@ -66,7 +66,7 @@ interface FeatureResolver {
      * @param keys Feature keys to resolve
      * @return Map of keys to resolved flags
      */
-    fun resolveAll(keys: Set<String>): Map<String, FeatureFlag> {
+    public fun resolveAll(keys: Set<String>): Map<String, FeatureFlag> {
         return keys.associateWith { resolve(it) }
     }
 }
@@ -98,7 +98,7 @@ interface FeatureResolver {
  * @property context Evaluation context
  * @property logger Optional logger for observability
  */
-class DefaultFeatureResolver(
+public class DefaultFeatureResolver(
     sources: List<FeatureSource>,
     private val evaluator: RuleEvaluator = NoOpRuleEvaluator.INSTANCE,
     override val context: ToggleContext,

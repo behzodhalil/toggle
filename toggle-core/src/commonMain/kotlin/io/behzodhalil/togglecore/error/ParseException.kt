@@ -21,4 +21,4 @@ package io.behzodhalil.togglecore.error
  *
  * @see YamlParseException
  */
-open class ParseException(message: String, cause: Throwable? = null) : Exception(message, cause)
+public open class ParseException(message: String, cause: Throwable? = null) : Exception(message, cause)

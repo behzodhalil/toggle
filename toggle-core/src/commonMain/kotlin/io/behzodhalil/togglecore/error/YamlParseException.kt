@@ -9,10 +9,10 @@ package io.behzodhalil.togglecore.error
  *
  * @see ParseException
  */
-class YamlParseException(
+public class YamlParseException(
     message: String,
     cause: Throwable? = null,
-    val line: Int? = null,
+    public val line: Int? = null,
 ) : ParseException(
     message = buildString {
         append(message)

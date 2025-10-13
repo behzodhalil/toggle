@@ -58,7 +58,7 @@ import kotlinx.collections.immutable.toPersistentMap
  * @see YamlParseException
  *
  */
-class YamlSource private constructor(
+public class YamlSource private constructor(
     private val yamlContent: String,
     override val priority: Int = DEFAULT_PRIORITY,
 ) : FeatureSource {
@@ -161,10 +161,10 @@ class YamlSource private constructor(
             featuresCache.value = parsed.toPersistentMap()
             initialized.value = true
         } catch (e: YamlParseException) {
-            // Re-throw our exceptions as-is
+            initialized.value = false
             throw e
         } catch (e: Exception) {
-            // Wrap unexpected exceptions
+            initialized.value = false
             throw YamlParseException(
                 message = "Failed to parse YAML content",
                 cause = e,
@@ -174,7 +174,7 @@ class YamlSource private constructor(
     }
 
 
-    companion object {
+    public companion object {
         private const val DEFAULT_PRIORITY = 120
         private const val DEFAULT_SOURCE_NAME = "yaml_source"
 
@@ -185,7 +185,7 @@ class YamlSource private constructor(
          * @param priority Source priority (default: 120)
          * @throws YamlParseException if content is invalid
          */
-        fun fromString(
+        public fun fromString(
             content: String,
             priority: Int = DEFAULT_PRIORITY,
         ): YamlSource {
@@ -200,7 +200,7 @@ class YamlSource private constructor(
          *  @param priority Source priority (default: 120)
          *  @throws YamlParseException if content is invalid
          */
-        fun fromResource(
+        public fun fromResource(
             resourcePath: String,
             priority: Int = DEFAULT_PRIORITY,
         ): YamlSource {

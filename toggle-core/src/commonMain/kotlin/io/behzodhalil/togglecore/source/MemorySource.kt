@@ -3,7 +3,7 @@ package io.behzodhalil.togglecore.source
 import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.core.FeatureKey
 
-class MemorySource(
+public class MemorySource(
     features: Map<String, Boolean> = emptyMap(),
 ) : FeatureSource {
 
@@ -18,19 +18,19 @@ class MemorySource(
         }
     }
 
-    fun setFeature(key: String, enabled: Boolean) {
+    public fun setFeature(key: String, enabled: Boolean) {
         _features[key] = enabled
     }
 
-    fun setFeature(feature: FeatureKey, enabled: Boolean) {
+    public fun setFeature(feature: FeatureKey, enabled: Boolean) {
         setFeature(feature.value, enabled)
     }
 
-    fun removeFeature(key: String) {
+    public fun removeFeature(key: String) {
         _features.remove(key)
     }
 
-    fun clear() {
+    public fun clear() {
         _features.clear()
     }
 
@@ -40,7 +40,7 @@ class MemorySource(
         }
     }
 
-    companion object {
+    public companion object {
         private const val DEFAULT_MEMORY_PRIORITY = 200
         private const val DEFAULT_SOURCE_NAME = "memory_source"
     }

@@ -10,6 +10,7 @@ plugins {
 }
 
 kotlin {
+    explicitApi()
     androidTarget {
         compilations.all {
             compileTaskProvider.configure {

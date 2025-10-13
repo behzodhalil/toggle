@@ -16,14 +16,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
-fun Toggle(configure: ToggleScope.() -> Unit): Toggle {
+public fun Toggle(configure: ToggleScope.() -> Unit): Toggle {
     val builder = ToggleScope()
     builder.configure()
     return builder.build()
 }
 
 @ToggleInternal
-class ToggleScope {
+public class ToggleScope {
     private val sources = mutableListOf<FeatureSource>()
     private var logger: ToggleLogger? = null
     private var evaluator: RuleEvaluator = NoOpRuleEvaluator.INSTANCE
@@ -33,7 +33,7 @@ class ToggleScope {
     /**
      * Configure feature sources
      */
-    fun sources(configure: SourcesScope.() -> Unit) {
+    public fun sources(configure: SourcesScope.() -> Unit) {
         val sourcesBuilder = SourcesScope()
         sourcesBuilder.configure()
         sources.addAll(sourcesBuilder.build())
@@ -42,7 +42,7 @@ class ToggleScope {
     /**
      * Configure context for feature evaluation
      */
-    fun context(configure: ToggleContextScope.() -> Unit) {
+    public fun context(configure: ToggleContextScope.() -> Unit) {
         val contextBuilder = ToggleContextScope()
         contextBuilder.configure()
         this.context = contextBuilder.build()
@@ -51,7 +51,7 @@ class ToggleScope {
     /**
      * Configure evaluation logic
      */
-    fun evaluation(configure: RuleEvaluationScope.() -> Unit) {
+    public fun evaluation(configure: RuleEvaluationScope.() -> Unit) {
         val evaluationBuilder = RuleEvaluationScope()
         evaluationBuilder.configure()
         this.evaluator = evaluationBuilder.build()
@@ -60,7 +60,7 @@ class ToggleScope {
     /**
      * Configure logging
      */
-    fun logging(configure: LoggingScope.() -> Unit) {
+    public fun logging(configure: LoggingScope.() -> Unit) {
         val loggingBuilder = LoggingScope()
         loggingBuilder.configure()
         this.logger = loggingBuilder.build()
@@ -69,14 +69,14 @@ class ToggleScope {
     /**
      * Set coroutine scope
      */
-    fun scope(scope: CoroutineScope) {
+    public fun scope(scope: CoroutineScope) {
         this.scope = scope
     }
 
     /**
      * Enable debug logging (shorthand)
      */
-    fun debug() {
+    public fun debug() {
         this.logger = createPlatformLogger()
     }
 

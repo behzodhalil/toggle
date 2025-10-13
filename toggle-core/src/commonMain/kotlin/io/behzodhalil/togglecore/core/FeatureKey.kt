@@ -18,7 +18,8 @@ import kotlin.jvm.JvmStatic
  */
 
 @JvmInline
-value class FeatureKey private constructor(val value: String): Comparable<FeatureKey> {
+public value class FeatureKey private constructor(public val value: String) :
+    Comparable<FeatureKey> {
     init {
         require(value.isNotBlank()) {
             "Feature key cannot be blank. Use meaningful identifiers like 'dark_mode' or 'premium_feature'."
@@ -34,21 +35,40 @@ value class FeatureKey private constructor(val value: String): Comparable<Featur
         return value.compareTo(other.value)
     }
 
-    companion object Registry {
+    public companion object Registry {
         private val _registry = atomic(emptySet<FeatureKey>())
-        val registry: Set<FeatureKey>
+        public val registry: Set<FeatureKey>
             get() = _registry.value
 
 
         @JvmStatic
-        fun of(value: String): FeatureKey {
+        public fun of(value: String): FeatureKey {
             val key = FeatureKey(value)
             register(key)
             return key
         }
 
+        /**
+         * Removes a key from the registry.
+         * Call this when you no longer need a dynamic feature key.
+         */
         @JvmStatic
-        fun find(value: String): FeatureKey? {
+        public fun unregister(key: FeatureKey) {
+            _registry.update { it - key }
+        }
+
+        /**
+         * Clears all keys from the registry.
+         * Useful for testing or application shutdown.
+         */
+        @JvmStatic
+        public fun clear() {
+            _registry.update { emptySet() }
+        }
+
+
+        @JvmStatic
+        public fun find(value: String): FeatureKey? {
             return _registry.value.find { it.value == value }
         }
 
@@ -58,8 +78,8 @@ value class FeatureKey private constructor(val value: String): Comparable<Featur
             }
         }
 
-        val EXPERIMENTAL_API = of("experimental_api")
-        val BETA_UI = of("beta_ui")
+        public val EXPERIMENTAL_API: FeatureKey = of("experimental_api")
+        public val BETA_UI: FeatureKey = of("beta_ui")
     }
 
     override fun toString(): String = "FeatureKey($value)"

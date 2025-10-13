@@ -3,22 +3,22 @@ package io.behzodhalil.togglecore.context
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface AttributeValue {
+public sealed interface AttributeValue {
     @Serializable
-    data class StringValue(val value: String) : AttributeValue
+    public data class StringValue(val value: String) : AttributeValue
 
     @Serializable
-    data class DoubleValue(val value: Double) : AttributeValue
+    public data class DoubleValue(val value: Double) : AttributeValue
 
     @Serializable
-    data class IntValue(val value: Int) : AttributeValue
+    public data class IntValue(val value: Int) : AttributeValue
 
     @Serializable
-    data class ShortValue(val value: Short) : AttributeValue
+    public data class ShortValue(val value: Short) : AttributeValue
 
     @Serializable
-    data class LongValue(val value: Long) : AttributeValue
+    public data class LongValue(val value: Long) : AttributeValue
 
     @Serializable
-    data class BooleanValue(val value: Boolean) : AttributeValue
+    public data class BooleanValue(val value: Boolean) : AttributeValue
 }

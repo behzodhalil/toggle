@@ -28,7 +28,7 @@ import io.behzodhalil.togglecore.source.FeatureSource
  *
  * @since 1.0.0
  */
-class PriorityFeatureResolver(
+public class PriorityFeatureResolver(
     sources: List<FeatureSource>,
     evaluator: RuleEvaluator = NoOpRuleEvaluator.INSTANCE,
     context: ToggleContext,

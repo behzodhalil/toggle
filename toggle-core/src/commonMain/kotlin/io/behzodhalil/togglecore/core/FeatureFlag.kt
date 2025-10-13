@@ -30,7 +30,7 @@ import kotlin.time.ExperimentalTime
  */
 @OptIn(ExperimentalTime::class)
 @Serializable
-data class FeatureFlag(
+public data class FeatureFlag(
     val key: String,
     val enabled: Boolean,
     val source: String,
@@ -59,7 +59,7 @@ data class FeatureFlag(
      * @param enabled New enabled state
      * @return New FeatureFlag instance with updated state
      */
-    fun withEnabled(enabled: Boolean): FeatureFlag {
+    public fun withEnabled(enabled: Boolean): FeatureFlag {
         return copy(enabled = enabled, timestamp = Clock.System.now().toEpochMilliseconds())
     }
 
@@ -71,7 +71,7 @@ data class FeatureFlag(
      * @param source New source name
      * @return New FeatureFlag instance with updated source
      */
-    fun withSource(source: String): FeatureFlag {
+    public fun withSource(source: String): FeatureFlag {
         require(source.isNotBlank()) { "Source cannot be blank" }
         return copy(source = source, timestamp = Clock.System.now().toEpochMilliseconds())
     }
@@ -83,7 +83,7 @@ data class FeatureFlag(
      * @param metadata Map of metadata to add/update
      * @return New FeatureFlag with merged metadata
      */
-    fun withMetadata(metadata: Map<String, String>): FeatureFlag {
+    public fun withMetadata(metadata: Map<String, String>): FeatureFlag {
         if (metadata.isEmpty()) return this
         return copy(
             metadata = this.metadata + metadata,
@@ -111,8 +111,8 @@ data class FeatureFlag(
         append(")")
     }
 
-    companion object {
-        fun enabled(key: String, source: String = "default") = FeatureFlag(key, true, source)
-        fun disabled(key: String, source: String = "default") = FeatureFlag(key, false, source)
+    public companion object {
+        public fun enabled(key: String, source: String = "default"): FeatureFlag = FeatureFlag(key, true, source)
+        public fun disabled(key: String, source: String = "default"): FeatureFlag = FeatureFlag(key, false, source)
     }
 }

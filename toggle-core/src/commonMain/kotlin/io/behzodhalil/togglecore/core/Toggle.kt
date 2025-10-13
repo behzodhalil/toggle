@@ -13,6 +13,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withTimeout
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Provides a unified interface for evaluating feature flag states and managing feature flag configurations.
@@ -99,7 +104,7 @@ import kotlinx.atomicfu.atomic
  * @see FeatureSource
  * @see FeatureKey
  */
-class Toggle private constructor(
+public class Toggle private constructor(
     private val resolver: FeatureResolver,
     private val cachingResolver: CachingFeatureResolver?,
     private val sources: ImmutableList<FeatureSource>,
@@ -117,7 +122,7 @@ class Toggle private constructor(
      *
      * Immutable after construction. To change context, create a new Toggle instance.
      */
-    val context: ToggleContext
+    public val context: ToggleContext
         get() = resolver.context
 
     /**
@@ -135,7 +140,7 @@ class Toggle private constructor(
      * @param feature Type-safe feature key
      * @return `true` if enabled, `false` otherwise (never throws)
      */
-    fun isEnabled(feature: FeatureKey): Boolean {
+    public fun isEnabled(feature: FeatureKey): Boolean {
         if (!isActive()) return false
 
         return runCatching {
@@ -154,7 +159,7 @@ class Toggle private constructor(
      * @param key Feature key string
      * @return `true` if enabled, `false` otherwise
      */
-    fun isEnabled(key: String): Boolean {
+    public fun isEnabled(key: String): Boolean {
         if (!isActive()) return false
 
         return runCatching {
@@ -193,7 +198,7 @@ class Toggle private constructor(
      * @param key Type-safe feature key
      * @return Feature flag (never null, never throws)
      */
-    fun value(key: FeatureKey): FeatureFlag {
+    public fun value(key: FeatureKey): FeatureFlag {
         return value(key.value)
     }
 
@@ -203,7 +208,7 @@ class Toggle private constructor(
      * @param key Feature key string
      * @return Feature flag (never null, never throws)
      */
-    fun value(key: String): FeatureFlag {
+    public fun value(key: String): FeatureFlag {
         if (!isActive()) {
             return FeatureFlag.disabled(key, source = "disposed")
         }
@@ -239,7 +244,7 @@ class Toggle private constructor(
      *
      * @return Immutable map of feature key to flag
      */
-    fun values(): Map<String, FeatureFlag> {
+    public fun values(): Map<String, FeatureFlag> {
         if (!isActive()) {
             return emptyMap()
         }
@@ -264,46 +269,44 @@ class Toggle private constructor(
      *
      * @return [Result.success] if at least one source refreshed, [Result.failure] if all failed
      */
-    suspend fun refresh(): Result<Unit> = runCatching {
+    public suspend fun refresh(): Result<Unit> = runCatching {
         checkActive()
 
         withContext(Dispatchers.Default) {
             logger?.log("Starting refresh of ${sources.size} source(s)")
 
-            // Clear cache before refresh
             cachingResolver?.invalidateAll()
 
-            val results = mutableListOf<SourceRefreshResult>()
-
-            // Refresh each source
-            sources.forEach { source ->
-                val result = try {
-                    source.refresh()
-                    SourceRefreshResult.Success(source.sourceName)
-                } catch (error: Exception) {
-                    SourceRefreshResult.Failure(source.sourceName, error)
+            // Parallel refresh with timeout
+            val results = sources.map { source ->
+                async {
+                    try {
+                        withTimeout(30.seconds) {
+                            source.refresh()
+                            SourceRefreshResult.Success(source.sourceName)
+                        }
+                    } catch (e: TimeoutCancellationException) {
+                        SourceRefreshResult.Failure(
+                            source.sourceName,
+                            e
+                        )
+                    } catch (e: Exception) {
+                        SourceRefreshResult.Failure(source.sourceName, e)
+                    }
                 }
-                results.add(result)
-            }
+            }.awaitAll()
 
-            // Log individual results
+            // Log results
             results.forEach { result ->
                 when (result) {
                     is SourceRefreshResult.Success ->
                         logger?.log("✓ Refreshed source: ${result.sourceName}")
-
                     is SourceRefreshResult.Failure ->
-                        logger?.log(
-                            "✗ Failed to refresh '${result.sourceName}': ${result.error.message}",
-                            result.error
-                        )
+                        logger?.log("✗ Failed: '${result.sourceName}': ${result.error.message}", result.error)
                 }
             }
 
-            // Collect failures
             val failures = results.filterIsInstance<SourceRefreshResult.Failure>()
-
-            // Fail only if ALL sources failed
             if (failures.size == sources.size && failures.isNotEmpty()) {
                 throw RefreshException(
                     message = "All ${sources.size} source(s) failed to refresh",
@@ -341,7 +344,7 @@ class Toggle private constructor(
      *
      * @param key Feature key to invalidate
      */
-    fun invalidate(key: FeatureKey) {
+    public fun invalidate(key: FeatureKey) {
         invalidate(key.value)
     }
 
@@ -350,7 +353,7 @@ class Toggle private constructor(
      *
      * @param key Feature key string to invalidate
      */
-    fun invalidate(key: String) {
+    public fun invalidate(key: String) {
         if (!isActive()) return
 
         cachingResolver?.invalidate(key)
@@ -364,7 +367,7 @@ class Toggle private constructor(
      *
      * @see invalidate
      */
-    fun invalidateAll() {
+    public fun invalidateAll() {
         if (!isActive()) return
 
         cachingResolver?.invalidateAll()
@@ -376,14 +379,14 @@ class Toggle private constructor(
      *
      * @return `true` if active, `false` if disposed
      */
-    fun isActive(): Boolean = state.value == State.ACTIVE
+    public fun isActive(): Boolean = state.value == State.ACTIVE
 
     /**
      * Checks if Toggle has been disposed.
      *
      * @return `true` if disposed, `false` if active
      */
-    fun isDisposed(): Boolean = state.value == State.DISPOSED
+    public fun isDisposed(): Boolean = state.value == State.DISPOSED
 
     /**
      * Disposes Toggle and releases all resources.
@@ -454,7 +457,7 @@ class Toggle private constructor(
         data class Failure(val sourceName: String, val error: Exception) : SourceRefreshResult
     }
 
-    companion object {
+    public companion object {
         /**
          * Creates a Toggle instance.
          *

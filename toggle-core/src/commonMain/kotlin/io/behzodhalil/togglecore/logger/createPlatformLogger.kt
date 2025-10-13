@@ -1,4 +1,4 @@
 package io.behzodhalil.togglecore.logger
 
 
-expect fun createPlatformLogger(): ToggleLogger
+public expect fun createPlatformLogger(): ToggleLogger

@@ -3,7 +3,7 @@ package io.behzodhalil.togglecore.context
 import io.behzodhalil.togglecore.core.ToggleInternal
 
 @ToggleInternal
-class ToggleContextScope {
+public class ToggleContextScope {
     private var userId: String? = null
     private var country: String? = null
     private var language: String? = null
@@ -14,49 +14,49 @@ class ToggleContextScope {
     /**
      * Set user ID
      */
-    fun userId(userId: String) {
+    public fun userId(userId: String) {
         this.userId = userId
     }
 
     /**
      * Set country
      */
-    fun country(country: String) {
+    public fun country(country: String) {
         this.country = country
     }
 
     /**
      * Set language
      */
-    fun language(language: String) {
+    public fun language(language: String) {
         this.language = language
     }
 
     /**
      * Set app version
      */
-    fun appVersion(version: String) {
+    public fun appVersion(version: String) {
         this.appVersion = version
     }
 
     /**
      * Set device ID
      */
-    fun deviceId(deviceId: String) {
+    public fun deviceId(deviceId: String) {
         this.deviceId = deviceId
     }
 
     /**
      * Add custom attribute
      */
-    fun attribute(key: String, value: AttributeValue) {
+    public fun attribute(key: String, value: AttributeValue) {
         attributes[key] = value
     }
 
     /**
      * Add multiple attributes
      */
-    fun attributes(vararg pairs: Pair<String, AttributeValue>) {
+    public fun attributes(vararg pairs: Pair<String, AttributeValue>) {
         attributes.putAll(pairs)
     }
 

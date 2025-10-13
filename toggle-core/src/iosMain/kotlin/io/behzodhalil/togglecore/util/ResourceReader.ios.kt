@@ -6,7 +6,7 @@ import platform.Foundation.NSString
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.stringWithContentsOfFile
 
-class NSResourceReader : ResourceReader {
+public class NSResourceReader : ResourceReader {
     @OptIn(ExperimentalForeignApi::class)
     override fun readText(path: String): String {
         val bundle = NSBundle.mainBundle
@@ -20,4 +20,4 @@ class NSResourceReader : ResourceReader {
     }
 }
 
-actual fun getResourceReader(): ResourceReader = NSResourceReader()
+public actual fun getResourceReader(): ResourceReader = NSResourceReader()

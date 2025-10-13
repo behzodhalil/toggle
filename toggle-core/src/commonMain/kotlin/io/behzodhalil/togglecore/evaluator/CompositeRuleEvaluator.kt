@@ -29,11 +29,11 @@ import io.behzodhalil.togglecore.context.ToggleContext
  *
  * @property evaluators List of evaluators to apply in order
  */
-class CompositeRuleEvaluator(
+public class CompositeRuleEvaluator(
     private val evaluators: List<RuleEvaluator>
 ) : RuleEvaluator {
 
-    constructor(vararg evaluators: RuleEvaluator) : this(evaluators.toList())
+    public constructor(vararg evaluators: RuleEvaluator) : this(evaluators.toList())
 
     init {
         require(evaluators.isNotEmpty()) {
@@ -47,16 +47,16 @@ class CompositeRuleEvaluator(
         }
     }
 
-    companion object {
+    public companion object {
         /**
          * Creates a composite evaluator from a list, optimizing for single evaluators.
          *
          * @return The single evaluator if list contains one, otherwise a composite
          */
-        fun of(evaluators: List<RuleEvaluator>): RuleEvaluator {
+        public fun of(evaluators: List<RuleEvaluator>): RuleEvaluator {
             return when (evaluators.size) {
                 0 -> NoOpRuleEvaluator.INSTANCE
-                1 -> evaluators.first()
+                1 -> evaluators[0]
                 else -> CompositeRuleEvaluator(evaluators)
             }
         }

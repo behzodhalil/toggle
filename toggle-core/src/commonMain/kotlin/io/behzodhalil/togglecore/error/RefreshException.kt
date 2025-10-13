@@ -7,9 +7,9 @@ package io.behzodhalil.togglecore.error
  *
  * @property failures List of exceptions from each failed source
  */
-class RefreshException(
+public class RefreshException(
     message: String,
-    val failures: List<Exception>,
+    public val failures: List<Exception>,
 ) : RuntimeException(
     message,
     failures.firstOrNull()

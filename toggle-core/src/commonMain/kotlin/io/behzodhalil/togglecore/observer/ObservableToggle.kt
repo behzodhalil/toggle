@@ -88,7 +88,7 @@ import kotlin.time.ExperimentalTime
  * @see FeatureKey
  * @see FeatureChangeEvent
  */
-interface ObservableToggle : AutoCloseable {
+public interface ObservableToggle : AutoCloseable {
     /**
      * A reactive snapshot of the enabled state for ALL registered features.
      *
@@ -105,7 +105,7 @@ interface ObservableToggle : AutoCloseable {
      *     .launchIn(scope)
      * ```
      */
-    val features: StateFlow<ImmutableMap<String, Boolean>>
+    public val features: StateFlow<ImmutableMap<String, Boolean>>
 
     /**
      * A stream of events for any feature flag state change.
@@ -127,7 +127,7 @@ interface ObservableToggle : AutoCloseable {
      *     .launchIn(analyticsScope)
      * ```
      */
-    val changes: SharedFlow<FeatureChangeEvent>
+    public val changes: SharedFlow<FeatureChangeEvent>
 
     /**
      * Checks the current enabled state of a feature synchronously.
@@ -148,7 +148,7 @@ interface ObservableToggle : AutoCloseable {
      * @param feature Type-safe feature key
      * @return Current enabled state
      */
-    fun isEnabled(feature: FeatureKey): Boolean
+    public fun isEnabled(feature: FeatureKey): Boolean
 
     /**
      * Checks if a feature is enabled using string key (less type-safe).
@@ -158,7 +158,7 @@ interface ObservableToggle : AutoCloseable {
      * @param key Feature key string
      * @return Current enabled state
      */
-    fun isEnabled(key: String): Boolean
+    public fun isEnabled(key: String): Boolean
 
     /**
      * Reactively observes a single feature's state.
@@ -184,7 +184,7 @@ interface ObservableToggle : AutoCloseable {
      * @param feature Type-safe feature key to observe
      * @return StateFlow that emits boolean state changes
      */
-    fun observe(feature: FeatureKey): StateFlow<Boolean>
+    public fun observe(feature: FeatureKey): StateFlow<Boolean>
 
     /**
      * Adds a callback-based observer for a specific feature key.
@@ -198,7 +198,7 @@ interface ObservableToggle : AutoCloseable {
      * @param observer Callback invoked on state changes
      * @return Unsubscribe function - call to remove the observer
      */
-    fun addObserver(featureKey: String, observer: FeatureObserver): () -> Unit
+    public fun addObserver(featureKey: String, observer: FeatureObserver): () -> Unit
 
     /**
      * Refreshes all features from their underlying sources.
@@ -217,7 +217,7 @@ interface ObservableToggle : AutoCloseable {
      *
      * @return [Result.success] if at least one source refreshed successfully
      */
-    suspend fun refresh(): Result<Unit>
+    public suspend fun refresh(): Result<Unit>
 
     /**
      * Invalidates the cached state of a single feature.
@@ -227,7 +227,7 @@ interface ObservableToggle : AutoCloseable {
      *
      * @param feature Feature key to invalidate
      */
-    fun invalidate(feature: FeatureKey)
+    public fun invalidate(feature: FeatureKey)
 
     /**
      * Invalidates all cached feature states.
@@ -235,16 +235,16 @@ interface ObservableToggle : AutoCloseable {
      * More efficient than calling [invalidate] for each feature individually.
      * Changed features will trigger notifications.
      */
-    fun invalidateAll()
+    public fun invalidateAll()
 
     /**
      * Checks if the observable is active and ready for use.
      *
      * @return `true` if active, `false` if closed
      */
-    fun isActive(): Boolean
+    public fun isActive(): Boolean
 
-    companion object {
+    public companion object {
         /**
          * Creates an [ObservableToggle] with DSL-based configuration.
          *
@@ -261,7 +261,7 @@ interface ObservableToggle : AutoCloseable {
          * @param builder Configuration lambda
          * @return Configured [ObservableToggle] instance
          */
-        operator fun invoke(builder: ObservableToggleScope.() -> Unit): ObservableToggle {
+        public operator fun invoke(builder: ObservableToggleScope.() -> Unit): ObservableToggle {
             return ObservableToggleScope().apply(builder).build()
         }
     }
@@ -284,36 +284,36 @@ interface ObservableToggle : AutoCloseable {
  * }
  * ```
  */
-class ObservableToggleScope internal constructor() {
+public class ObservableToggleScope internal constructor() {
     /**
      * The underlying [Toggle] instance (required).
      */
-    var toggle: Toggle? = null
+    public var toggle: Toggle? = null
 
     /**
      * Coroutine scope for flow emissions.
      * If not provided, a default scope with [SupervisorJob] is created.
      */
-    var scope: CoroutineScope? = null
+    public var scope: CoroutineScope? = null
 
     /**
      * Buffer capacity for [ObservableToggle.changes] flow.
      * Defaults to 64. Increase for high-frequency updates.
      */
-    var bufferCapacity: Int = 64
+    public var bufferCapacity: Int = 64
 
     /**
      * Logger for diagnostic messages.
      * If not provided, uses platform default logger.
      */
-    var logger: ToggleLogger? = null
+    public var logger: ToggleLogger? = null
 
     /**
      * Whether [ObservableToggle] owns the scope lifecycle.
      * If true, scope will be cancelled on [ObservableToggle.close].
      * Defaults to true if no scope is provided, false otherwise.
      */
-    var ownScope: Boolean? = null
+    public var ownScope: Boolean? = null
 
     internal fun build(): ObservableToggle {
         val toggle = requireNotNull(toggle) { "toggle must be provided" }

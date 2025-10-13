@@ -32,7 +32,7 @@ import io.behzodhalil.togglecore.context.ToggleContext
  * @property predicate Determines if [evaluator] should be applied
  * @property evaluator The evaluator to apply when predicate is true
  */
-class ConditionalRuleEvaluator(
+public class ConditionalRuleEvaluator(
     private val predicate: (FeatureFlag, ToggleContext) -> Boolean,
     private val evaluator: RuleEvaluator,
 ) : RuleEvaluator {

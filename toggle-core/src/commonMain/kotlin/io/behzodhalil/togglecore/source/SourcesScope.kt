@@ -3,13 +3,13 @@ package io.behzodhalil.togglecore.source
 import io.behzodhalil.togglecore.core.ToggleInternal
 
 @ToggleInternal
-class SourcesScope internal constructor() {
+public class SourcesScope internal constructor() {
     private val sources = mutableListOf<FeatureSource>()
 
     /**
      * Add in-memory source with DSL configuration
      */
-    fun memory(configure: MemorySourceScope.() -> Unit = {}) {
+    public fun memory(configure: MemorySourceScope.() -> Unit = {}) {
         val builder = MemorySourceScope()
         builder.configure()
         sources.add(builder.build())
@@ -18,7 +18,7 @@ class SourcesScope internal constructor() {
     /**
      * Add YAML source with DSL configuration
      */
-    fun yaml(configure: YamlSourceScope.() -> Unit) {
+    public fun yaml(configure: YamlSourceScope.() -> Unit) {
         val builder = YamlSourceScope()
         builder.configure()
         sources.add(builder.build())
@@ -27,14 +27,14 @@ class SourcesScope internal constructor() {
     /**
      * Add custom source
      */
-    fun new(source: FeatureSource) {
+    public fun new(source: FeatureSource) {
         sources.add(source)
     }
 
     /**
      * Add custom source with priority
      */
-    fun new(priority: Int, sourceFactory: () -> FeatureSource) {
+    public fun new(priority: Int, sourceFactory: () -> FeatureSource) {
         val source = sourceFactory()
         sources.add(PriorityFeatureSource(source, priority))
     }

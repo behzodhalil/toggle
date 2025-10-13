@@ -3,21 +3,21 @@ package io.behzodhalil.togglecore.source
 import io.behzodhalil.togglecore.core.ToggleInternal
 
 @ToggleInternal
-class YamlSourceScope {
+public class YamlSourceScope {
     private var resourcePath: String? = null
     private var content: String? = null
 
     /**
      * Load from resource path
      */
-    fun fromResource(path: String) {
+    public fun fromResource(path: String) {
         this.resourcePath = path
     }
 
     /**
      * Load from string content
      */
-    fun fromString(content: String) {
+    public fun fromString(content: String) {
         this.content = content
     }
 

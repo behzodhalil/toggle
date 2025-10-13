@@ -3,6 +3,9 @@ package io.behzodhalil.togglecore.resolver
 import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.context.ToggleContext
 import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
+import kotlinx.collections.immutable.persistentMapOf
 
 /**
  * Decorator that caches resolution results.
@@ -17,58 +20,58 @@ import kotlinx.atomicfu.atomic
  * @property delegate Underlying resolver
  * @property cache Cache storage
  */
-class CachingFeatureResolver(
+public class CachingFeatureResolver(
     private val delegate: FeatureResolver,
 ) : FeatureResolver {
 
-    private val cache = atomic<MutableMap<String, FeatureFlag>>(mutableMapOf())
+    private val cache = atomic(persistentMapOf<String, FeatureFlag>())
+    private val lock = reentrantLock()
 
     override val context: ToggleContext
         get() = delegate.context
 
     override fun resolve(key: String): FeatureFlag {
-        return cache.value.getOrPut(key) {
-            delegate.resolve(key)
+        val cached = cache.value[key]
+        if (cached != null) return cached
+
+        return lock.withLock {
+            val newFlag = cache.value[key]
+            if (newFlag != null) return newFlag
+
+            val resolved = delegate.resolve(key)
+            cache.value = cache.value.put(key, resolved)
+            resolved
         }
     }
 
     override fun resolveAll(keys: Set<String>): Map<String, FeatureFlag> {
-        val result = mutableMapOf<String, FeatureFlag>()
-        val uncached = mutableSetOf<String>()
+        val currentCache = cache.value
+        val uncached = keys.filterNot { it in currentCache }.toSet()
 
-        // Collect cached values
-        keys.forEach { key ->
-            val cached = cache.value[key]
-            if (cached != null) {
-                result[key] = cached
-            } else {
-                uncached.add(key)
-            }
+        if (uncached.isEmpty()) {
+            return keys.associateWith { currentCache[it]!! }
         }
 
-        // Batch resolve uncached
-        if (uncached.isNotEmpty()) {
+        return lock.withLock {
             val resolved = delegate.resolveAll(uncached)
-            cache.value.putAll(resolved)
-            result.putAll(resolved)
+            cache.value = cache.value.putAll(resolved)
+
+            keys.associateWith { cache.value[it]!! }
         }
-
-        return result
     }
-
     /**
      * Invalidates cached result for a specific key.
      *
      * @param key Feature key to invalidate
      */
-    fun invalidate(key: String) {
+    public fun invalidate(key: String) {
         cache.value.remove(key)
     }
 
     /**
      * Invalidates all cached results.
      */
-    fun invalidateAll() {
+    public fun invalidateAll() {
         cache.value.clear()
     }
 }
