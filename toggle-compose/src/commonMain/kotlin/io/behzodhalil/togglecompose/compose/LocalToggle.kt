@@ -43,7 +43,7 @@ import io.behzodhalil.togglecore.observer.ObservableToggle
  *
  * @see LocalObservableToggle for reactive observation
  */
-val LocalToggle: ProvidableCompositionLocal<Toggle?> = staticCompositionLocalOf { null }
+public val LocalToggle: ProvidableCompositionLocal<Toggle?> = staticCompositionLocalOf { null }
 
 /**
  * CompositionLocal for providing [ObservableToggle] down the composition tree.
@@ -83,7 +83,7 @@ val LocalToggle: ProvidableCompositionLocal<Toggle?> = staticCompositionLocalOf 
  *
  * @see LocalToggle for non-reactive access
  */
-val LocalObservableToggle: ProvidableCompositionLocal<ObservableToggle?> = compositionLocalOf { null }
+public val LocalObservableToggle: ProvidableCompositionLocal<ObservableToggle?> = compositionLocalOf { null }
 
 
 /**
@@ -111,7 +111,7 @@ val LocalObservableToggle: ProvidableCompositionLocal<ObservableToggle?> = compo
  * @throws IllegalStateException if ObservableToggle is not provided
  */
 @Composable
-fun observeToggle(feature: FeatureKey): State<Boolean> {
+public fun observeToggle(feature: FeatureKey): State<Boolean> {
     val observable = LocalObservableToggle.current
         ?: error("ObservableToggle not provided. Wrap your composable with ToggleProvider.")
 
@@ -140,7 +140,7 @@ fun observeToggle(feature: FeatureKey): State<Boolean> {
  * @throws IllegalStateException if Toggle is not provided
  */
 @Composable
-fun isFeatureEnabled(feature: FeatureKey): Boolean {
+public fun isFeatureEnabled(feature: FeatureKey): Boolean {
     val toggle = LocalToggle.current
         ?: error("Toggle not provided. Wrap your composable with ToggleProvider.")
 

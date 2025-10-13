@@ -11,6 +11,7 @@ plugins {
 }
 
 kotlin {
+    explicitApi()
     androidLibrary {
         namespace = "io.behzodhalil.togglecompose"
         compileSdk = 35

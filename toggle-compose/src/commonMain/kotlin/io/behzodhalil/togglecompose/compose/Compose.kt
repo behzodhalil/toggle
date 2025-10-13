@@ -41,7 +41,7 @@ import io.behzodhalil.togglecore.observer.ObservableToggleScope
  * @see observeAsStateNonLifecycle for non-lifecycle-aware alternative
  */
 @Composable
-fun ObservableToggle.observeAsState(feature: FeatureKey): State<Boolean> {
+public fun ObservableToggle.observeAsState(feature: FeatureKey): State<Boolean> {
     return observe(feature).collectAsStateWithLifecycle()
 }
 
@@ -58,7 +58,7 @@ fun ObservableToggle.observeAsState(feature: FeatureKey): State<Boolean> {
  * @return Compose [State] that emits the current boolean value of the feature
  */
 @Composable
-fun ObservableToggle.observeAsStateNonLifecycle(feature: FeatureKey): State<Boolean> {
+public fun ObservableToggle.observeAsStateNonLifecycle(feature: FeatureKey): State<Boolean> {
     return observe(feature).collectAsState()
 }
 
@@ -97,7 +97,7 @@ fun ObservableToggle.observeAsStateNonLifecycle(feature: FeatureKey): State<Bool
  * @return Remembered Toggle instance
  */
 @Composable
-fun rememberToggle(builder: ToggleScope.() -> Unit): Toggle {
+public fun rememberToggle(builder: ToggleScope.() -> Unit): Toggle {
     val toggle = remember {
         Toggle(builder)
     }
@@ -152,7 +152,7 @@ fun rememberToggle(builder: ToggleScope.() -> Unit): Toggle {
  * @return Remembered ObservableToggle instance
  */
 @Composable
-fun rememberObservableToggle(
+public fun rememberObservableToggle(
     toggle: Toggle,
     configure: (ObservableToggleScope.() -> Unit)? = null
 ): ObservableToggle {
