@@ -19,6 +19,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "toggle"
 include(":toggle-core")
-include(":samples:android-sample")
-include(":samples:kmp-sample")
 include(":toggle-compose")

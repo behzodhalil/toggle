@@ -7,7 +7,7 @@ import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmStatic
 
 /**
- * Type-safe feature flag identifier.
+ * Type-safe, immutable identifier for a feature flag.
  *
  * Each instance is automatically registered for debugging. Keys must be non-blank.
  *
@@ -42,7 +42,7 @@ value class FeatureKey private constructor(val value: String): Comparable<Featur
 
         @JvmStatic
         fun of(value: String): FeatureKey {
-            val key = FeatureKey(value) // Validation happens in init
+            val key = FeatureKey(value)
             register(key)
             return key
         }
