@@ -1,0 +1,14 @@
+public final class io/behzodhalil/togglecompose/compose/ComposeKt {
+	public static final fun observeAsState-2jUnuI4 (Lio/behzodhalil/togglecore/observer/ObservableToggle;Ljava/lang/String;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/State;
+	public static final fun observeAsStateNonLifecycle-2jUnuI4 (Lio/behzodhalil/togglecore/observer/ObservableToggle;Ljava/lang/String;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/State;
+	public static final fun rememberObservableToggle (Lio/behzodhalil/togglecore/core/Toggle;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)Lio/behzodhalil/togglecore/observer/ObservableToggle;
+	public static final fun rememberToggle (Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lio/behzodhalil/togglecore/core/Toggle;
+}
+
+public final class io/behzodhalil/togglecompose/compose/LocalToggleKt {
+	public static final fun getLocalObservableToggle ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+	public static final fun getLocalToggle ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+	public static final fun isFeatureEnabled-bav9NAE (Ljava/lang/String;Landroidx/compose/runtime/Composer;I)Z
+	public static final fun observeToggle-bav9NAE (Ljava/lang/String;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/State;
+}
+

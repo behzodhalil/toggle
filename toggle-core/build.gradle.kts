@@ -11,6 +11,7 @@ plugins {
 
 kotlin {
     explicitApi()
+
     androidTarget {
         compilations.all {
             compileTaskProvider.configure {
@@ -87,7 +88,6 @@ localProperties.forEach { key, value ->
         }
         keyString == "mavenCentralUsername" || keyString == "mavenCentralPassword" -> {
             extra[keyString] = value
-            println("Loaded $keyString: ${if (keyString.contains("Password")) "***" else value}")
         }
     }
 }

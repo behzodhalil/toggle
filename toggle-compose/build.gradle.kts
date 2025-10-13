@@ -1,9 +1,11 @@
 
+import org.gradle.kotlin.dsl.publishing
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.vanniktech.publish)
@@ -12,38 +14,27 @@ plugins {
 
 kotlin {
     explicitApi()
-    androidLibrary {
-        namespace = "io.behzodhalil.togglecompose"
-        compileSdk = 35
-        minSdk = 24
 
-        withHostTestBuilder {
-        }
 
-        withDeviceTestBuilder {
-            sourceSetTreeName = "test"
-        }.configure {
-            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    androidTarget {
+        compilations.all {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.JVM_1_8)
+                }
+            }
         }
+        publishLibraryVariants("release")
     }
 
-    val xcfName = "toggle-composeKit"
-
-    iosX64 {
-        binaries.framework {
-            baseName = xcfName
-        }
-    }
-
-    iosArm64 {
-        binaries.framework {
-            baseName = xcfName
-        }
-    }
-
-    iosSimulatorArm64 {
-        binaries.framework {
-            baseName = xcfName
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach {
+        it.binaries.framework {
+            baseName = "toggle-compose"
+            isStatic = true
         }
     }
 
@@ -74,14 +65,6 @@ kotlin {
             }
         }
 
-        getByName("androidDeviceTest") {
-            dependencies {
-                implementation(libs.androidx.runner)
-                implementation(libs.androidx.core)
-                implementation(libs.androidx.junit)
-            }
-        }
-
         iosMain {
             dependencies {
             }
@@ -89,6 +72,19 @@ kotlin {
     }
 
 }
+
+android {
+    namespace = "io.behzodhalil.togglecompose"
+    compileSdk = 35
+    defaultConfig {
+        minSdk = 24
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
