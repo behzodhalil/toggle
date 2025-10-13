@@ -4,13 +4,13 @@
 
 <p align="center">
   <a href="https://github.com/behzodhalil/toggle/releases">
-    <img src="https://img.shields.io/github/v/release/behzodhalil/toggle?style=flat-square" alt="Release">
+    <img src="https://img.shields.io/github/v/release/behzodhalil/toggle" alt="Release">
   </a>
   <a href="https://opensource.org/licenses/Apache-2.0">
-    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="License">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License">
   </a>
   <a href="https://kotlinlang.org">
-    <img src="https://img.shields.io/badge/kotlin-2.0.0-blue.svg?logo=kotlin&style=flat-square" alt="Kotlin">
+    <img src="https://img.shields.io/badge/kotlin-2.0.0-blue.svg?logo=kotlin" alt="Kotlin">
   </a>
   <a href="https://github.com/behzodhalil/toggle">
     <img src="https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20JVM-lightgrey.svg?style=flat-square" alt="Platform">
@@ -20,16 +20,9 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Installation](#installation)
 - [Architecture](#architecture)
+- [Installation](#installation)
 - [Documentation](#documentation)
-    - [Getting Started](#getting-started)
-    - [Sources](#sources)
-    - [Contextual Evaluation](#contextual-evaluation)
-    - [Rule Evaluators](#rule-evaluators)
-    - [Observable Toggle](#observable-toggle)
-    - [Compose Integration](#compose-integration)
-
 - [License](#license)
 
 ## Overview
@@ -47,7 +40,6 @@ Toggle is a modern, type-safe feature flag library designed for Kotlin Multiplat
 
 Toggle follows a layered architecture where multiple sources can provide feature flags, and custom rule evaluators determine the final enabled state based on context.
 
----
 
 ## Architecture
 
@@ -86,11 +78,7 @@ Toggle follows a **layered architecture** with clear separation of concerns:
 8. **ObservableToggle**: Reactive wrapper for observing feature changes
 
 
----
-
 ## Installation
-
-Toggle is published to Maven Central.
 
 ### Gradle (Kotlin DSL)
 
@@ -531,14 +519,10 @@ fun LifecycleAwareFeature() {
 }
 ```
 
----
-
-
-
 ## License
 
 ```
-Copyright 2024 Behzod Halil
+Copyright 2025 Behzod Halil
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
