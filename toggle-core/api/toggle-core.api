@@ -398,7 +398,7 @@ public abstract interface class io/behzodhalil/togglecore/evaluator/RuleEvaluato
 	public abstract fun evaluate (Lio/behzodhalil/togglecore/core/FeatureFlag;Lio/behzodhalil/togglecore/context/ToggleContext;)Lio/behzodhalil/togglecore/core/FeatureFlag;
 }
 
-public final class io/behzodhalil/togglecore/logger/CreatePlatformLogger_androidKt {
+public final class io/behzodhalil/togglecore/logger/LoggerUtil_androidKt {
 	public static final fun createPlatformLogger ()Lio/behzodhalil/togglecore/logger/ToggleLogger;
 }
 
