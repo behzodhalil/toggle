@@ -10,12 +10,13 @@ public class NSResourceReader : ResourceReader {
     @OptIn(ExperimentalForeignApi::class)
     override fun readText(path: String): String {
         val bundle = NSBundle.mainBundle
-        val resourcePath = bundle.pathForResource(path, ofType = null)
-            ?: error("Resource not found: $path")
+        val resourcePath =
+            bundle.pathForResource(path, ofType = null)
+                ?: error("Resource not found: $path")
         return NSString.stringWithContentsOfFile(
             resourcePath,
             encoding = NSUTF8StringEncoding,
-            error = null
+            error = null,
         ) as String
     }
 }

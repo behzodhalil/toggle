@@ -8,17 +8,17 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class FeatureFlagTest {
-
     @Test
     fun `given all flag properties when creating feature flag then all fields are set correctly`() {
         // Given & When
-        val featureFlag = FeatureFlag(
-            key = "test_feature",
-            enabled = true,
-            source = "test",
-            metadata = mapOf("version" to "1.0"),
-            timestamp = 1234567890L
-        )
+        val featureFlag =
+            FeatureFlag(
+                key = "test_feature",
+                enabled = true,
+                source = "test",
+                metadata = mapOf("version" to "1.0"),
+                timestamp = 1234567890L,
+            )
 
         // Then
         assertEquals("test_feature", featureFlag.key)
@@ -31,11 +31,12 @@ class FeatureFlagTest {
     @Test
     fun `given minimal properties when creating disabled flag then uses defaults`() {
         // Given & When
-        val featureFlag = FeatureFlag(
-            key = "disabled_feature",
-            enabled = false,
-            source = "config"
-        )
+        val featureFlag =
+            FeatureFlag(
+                key = "disabled_feature",
+                enabled = false,
+                source = "config",
+            )
 
         // Then
         assertEquals("disabled_feature", featureFlag.key)
@@ -60,12 +61,13 @@ class FeatureFlagTest {
     @Test
     fun `given feature flag when serializing to JSON then can deserialize with same values`() {
         // Given
-        val featureFlag = FeatureFlag(
-            key = "serializable_feature",
-            enabled = true,
-            source = "json",
-            metadata = mapOf("test" to "value")
-        )
+        val featureFlag =
+            FeatureFlag(
+                key = "serializable_feature",
+                enabled = true,
+                source = "json",
+                metadata = mapOf("test" to "value"),
+            )
 
         // When
         val json = Json.encodeToString(FeatureFlag.serializer(), featureFlag)

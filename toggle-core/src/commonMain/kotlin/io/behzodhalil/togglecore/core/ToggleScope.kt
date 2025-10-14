@@ -1,16 +1,16 @@
 package io.behzodhalil.togglecore.core
 
-import io.behzodhalil.togglecore.source.FeatureSource
 import io.behzodhalil.togglecore.context.ToggleContext
 import io.behzodhalil.togglecore.context.ToggleContextScope
-import io.behzodhalil.togglecore.evaluator.RuleEvaluationScope
 import io.behzodhalil.togglecore.evaluator.NoOpRuleEvaluator
+import io.behzodhalil.togglecore.evaluator.RuleEvaluationScope
 import io.behzodhalil.togglecore.evaluator.RuleEvaluator
 import io.behzodhalil.togglecore.logger.LoggingScope
 import io.behzodhalil.togglecore.logger.ToggleLogger
 import io.behzodhalil.togglecore.logger.createPlatformLogger
 import io.behzodhalil.togglecore.resolver.CachingFeatureResolver
 import io.behzodhalil.togglecore.resolver.DefaultFeatureResolver
+import io.behzodhalil.togglecore.source.FeatureSource
 import io.behzodhalil.togglecore.source.SourcesScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -87,12 +87,13 @@ public class ToggleScope {
         val coroutineScope = scope ?: CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
         // Create base resolver
-        val baseResolver = DefaultFeatureResolver(
-            sources = sortedSources,
-            evaluator = evaluator,
-            context = context,
-            logger = logger
-        )
+        val baseResolver =
+            DefaultFeatureResolver(
+                sources = sortedSources,
+                evaluator = evaluator,
+                context = context,
+                logger = logger,
+            )
 
         // Wrap with caching for performance
         val cachingResolver = CachingFeatureResolver(baseResolver)

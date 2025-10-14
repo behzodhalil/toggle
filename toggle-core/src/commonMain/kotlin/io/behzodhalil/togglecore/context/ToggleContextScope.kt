@@ -49,7 +49,10 @@ public class ToggleContextScope {
     /**
      * Add custom attribute
      */
-    public fun attribute(key: String, value: AttributeValue) {
+    public fun attribute(
+        key: String,
+        value: AttributeValue,
+    ) {
         attributes[key] = value
     }
 
@@ -67,7 +70,7 @@ public class ToggleContextScope {
             language = language,
             appVersion = appVersion,
             deviceId = deviceId,
-            attributes = attributes
+            attributes = attributes,
         )
     }
 }

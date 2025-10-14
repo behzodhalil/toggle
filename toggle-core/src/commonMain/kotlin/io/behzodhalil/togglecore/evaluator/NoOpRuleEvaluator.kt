@@ -1,7 +1,7 @@
 package io.behzodhalil.togglecore.evaluator
 
-import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.context.ToggleContext
+import io.behzodhalil.togglecore.core.FeatureFlag
 
 /**
  * Pass-through evaluator that returns flags unchanged.
@@ -11,7 +11,10 @@ import io.behzodhalil.togglecore.context.ToggleContext
  *
  */
 internal class NoOpRuleEvaluator private constructor() : RuleEvaluator {
-    override fun evaluate(flag: FeatureFlag, context: ToggleContext): FeatureFlag {
+    override fun evaluate(
+        flag: FeatureFlag,
+        context: ToggleContext,
+    ): FeatureFlag {
         return flag
     }
 

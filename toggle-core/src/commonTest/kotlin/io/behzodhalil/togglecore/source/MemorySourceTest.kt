@@ -4,12 +4,11 @@ import io.behzodhalil.togglecore.core.FeatureKey
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.test.assertFalse
 
 class MemorySourceTest {
-
     @Test
     fun `create empty memory source`() {
         val source = MemorySource()
@@ -21,10 +20,11 @@ class MemorySourceTest {
 
     @Test
     fun `create memory source with initial features`() {
-        val features = mapOf(
-            "feature1" to true,
-            "feature2" to false
-        )
+        val features =
+            mapOf(
+                "feature1" to true,
+                "feature2" to false,
+            )
         val source = MemorySource(features)
 
         val feature1 = source.get("feature1")
@@ -88,11 +88,14 @@ class MemorySourceTest {
 
     @Test
     fun `clear all features`() {
-        val source = MemorySource(mapOf(
-            "feature1" to true,
-            "feature2" to false,
-            "feature3" to true
-        ))
+        val source =
+            MemorySource(
+                mapOf(
+                    "feature1" to true,
+                    "feature2" to false,
+                    "feature3" to true,
+                ),
+            )
 
         assertEquals(3, source.getAll().size)
 
@@ -106,11 +109,12 @@ class MemorySourceTest {
 
     @Test
     fun `get all features returns correct list`() {
-        val initialFeatures = mapOf(
-            "alpha" to true,
-            "beta" to false,
-            "gamma" to true
-        )
+        val initialFeatures =
+            mapOf(
+                "alpha" to true,
+                "beta" to false,
+                "gamma" to true,
+            )
         val source = MemorySource(initialFeatures)
 
         val allFeatures = source.getAll()

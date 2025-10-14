@@ -11,9 +11,9 @@ public class RefreshException(
     message: String,
     public val failures: List<Exception>,
 ) : RuntimeException(
-    message,
-    failures.firstOrNull()
-) {
+        message,
+        failures.firstOrNull(),
+    ) {
     override fun toString(): String {
         return buildString {
             append("RefreshException: $message")

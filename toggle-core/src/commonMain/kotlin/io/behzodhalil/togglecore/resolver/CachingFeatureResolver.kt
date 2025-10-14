@@ -1,7 +1,7 @@
 package io.behzodhalil.togglecore.resolver
 
-import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.context.ToggleContext
+import io.behzodhalil.togglecore.core.FeatureFlag
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
@@ -23,7 +23,6 @@ import kotlinx.collections.immutable.persistentMapOf
 public class CachingFeatureResolver(
     private val delegate: FeatureResolver,
 ) : FeatureResolver {
-
     private val cache = atomic(persistentMapOf<String, FeatureFlag>())
     private val lock = reentrantLock()
 
@@ -59,19 +58,24 @@ public class CachingFeatureResolver(
             keys.associateWith { cache.value[it]!! }
         }
     }
+
     /**
      * Invalidates cached result for a specific key.
      *
      * @param key Feature key to invalidate
      */
     public fun invalidate(key: String) {
-        cache.value.remove(key)
+        lock.withLock {
+            cache.value = cache.value.remove(key)
+        }
     }
 
     /**
      * Invalidates all cached results.
      */
     public fun invalidateAll() {
-        cache.value.clear()
+        lock.withLock {
+            cache.value = persistentMapOf()
+        }
     }
 }

@@ -13,12 +13,12 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class YamlSourceTest {
-
     // ========== Basic Functionality Tests ==========
 
     @Test
     fun `create yaml source with complex format`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               feature1:
                 enabled: true
@@ -29,7 +29,7 @@ class YamlSourceTest {
               feature2:
                 enabled: false
                 description: "Test feature 2"
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -52,12 +52,13 @@ class YamlSourceTest {
 
     @Test
     fun `create yaml source with simple format`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               dark_mode: true
               new_ui: false
               beta_feature: yes
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -77,11 +78,12 @@ class YamlSourceTest {
 
     @Test
     fun `yaml source with minimal feature configuration`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               minimal_feature:
                 enabled: true
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -94,10 +96,11 @@ class YamlSourceTest {
 
     @Test
     fun `yaml source with default values`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               default_feature:
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -109,11 +112,12 @@ class YamlSourceTest {
 
     @Test
     fun `yaml source with only description`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               documented_feature:
                 description: "This feature has no enabled field"
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -125,7 +129,8 @@ class YamlSourceTest {
 
     @Test
     fun `yaml source with complex metadata`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               complex_feature:
                 enabled: true
@@ -135,7 +140,7 @@ class YamlSourceTest {
                   target_audience: "beta_users"
                   experiment_id: "exp_123"
                   start_date: "2024-01-01"
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -151,7 +156,8 @@ class YamlSourceTest {
 
     @Test
     fun `get all features returns complete list`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               alpha:
                 enabled: true
@@ -161,7 +167,7 @@ class YamlSourceTest {
                 enabled: true
                 metadata:
                   test: "value"
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -177,11 +183,12 @@ class YamlSourceTest {
 
     @Test
     fun `yaml source handles nonexistent features`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               existing_feature:
                 enabled: true
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -194,7 +201,8 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with boolean values in different formats`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               true_feature: true
               false_feature: false
@@ -204,7 +212,7 @@ class YamlSourceTest {
               off_feature: off
               one_feature: 1
               zero_feature: 0
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -220,13 +228,14 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with mixed case boolean values`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               true_upper: TRUE
               false_upper: FALSE
               yes_mixed: Yes
               no_mixed: No
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -238,10 +247,11 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with invalid boolean value throws exception`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               invalid_boolean: maybe
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -255,12 +265,13 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with special characters in feature names`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               feature-with-dashes: true
               feature_with_underscores: false
               feature.with.dots: true
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -271,7 +282,8 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with quoted strings in metadata`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               feature_with_quotes:
                 enabled: true
@@ -279,7 +291,7 @@ class YamlSourceTest {
                 metadata:
                   quoted_value: "value with spaces"
                   unquoted_value: simple
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -292,14 +304,15 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with unicode characters`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               unicode_feature:
                 enabled: true
                 description: "Feature with émojis 🚀 and ñ characters"
                 metadata:
                   owner: "tëam-ñ"
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -311,7 +324,8 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with comments`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             # This is a comment
             features:
               # Comment before feature
@@ -323,7 +337,7 @@ class YamlSourceTest {
                 # Comment in metadata
                 metadata:
                   key: value
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -335,14 +349,15 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with empty lines`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
 
               feature1: true
 
               feature2: false
 
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -368,10 +383,11 @@ class YamlSourceTest {
 
     @Test
     fun `yaml content without features section throws exception`() {
-        val yamlWithoutFeatures = """
+        val yamlWithoutFeatures =
+            """
             other_config:
               value: "test"
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlWithoutFeatures)
 
@@ -383,9 +399,10 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with empty features section throws exception`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -399,10 +416,11 @@ class YamlSourceTest {
 
     @Test
     fun `yaml source has default priority`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               test_feature: true
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
         assertEquals(120, source.priority)
@@ -410,10 +428,11 @@ class YamlSourceTest {
 
     @Test
     fun `yaml source with custom priority`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               test_feature: true
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent, priority = 200)
         assertEquals(200, source.priority)
@@ -423,10 +442,11 @@ class YamlSourceTest {
 
     @Test
     fun `yaml refresh works correctly`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               refreshable_feature: true
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -444,24 +464,26 @@ class YamlSourceTest {
 
     @Test
     fun `concurrent access to yaml source is thread safe`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               feature1: true
               feature2: false
               feature3: true
               feature4: false
               feature5: true
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
         runBlocking {
-            val jobs = (1..100).map { iteration ->
-                async {
-                    val featureKey = "feature${(iteration % 5) + 1}"
-                    source.get(featureKey)
+            val jobs =
+                (1..100).map { iteration ->
+                    async {
+                        val featureKey = "feature${(iteration % 5) + 1}"
+                        source.get(featureKey)
+                    }
                 }
-            }
 
             val results = jobs.awaitAll()
             assertEquals(100, results.size)
@@ -471,20 +493,22 @@ class YamlSourceTest {
 
     @Test
     fun `concurrent refresh calls are thread safe`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               test_feature: true
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
         runBlocking {
-            val jobs = (1..50).map {
-                async {
-                    source.refresh()
-                    source.get("test_feature")
+            val jobs =
+                (1..50).map {
+                    async {
+                        source.refresh()
+                        source.get("test_feature")
+                    }
                 }
-            }
 
             val results = jobs.awaitAll()
             assertTrue(results.all { it?.enabled == true })
@@ -493,25 +517,27 @@ class YamlSourceTest {
 
     @Test
     fun `concurrent get and getAll are thread safe`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               feature1: true
               feature2: false
               feature3: true
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
         runBlocking {
-            val jobs = (1..100).map { iteration ->
-                async {
-                    if (iteration % 2 == 0) {
-                        source.get("feature${(iteration % 3) + 1}")
-                    } else {
-                        source.getAll()
+            val jobs =
+                (1..100).map { iteration ->
+                    async {
+                        if (iteration % 2 == 0) {
+                            source.get("feature${(iteration % 3) + 1}")
+                        } else {
+                            source.getAll()
+                        }
                     }
                 }
-            }
 
             val results = jobs.awaitAll()
             assertEquals(100, results.size)
@@ -524,10 +550,11 @@ class YamlSourceTest {
     fun `yaml source parses lazily on first access`() {
         // This test verifies lazy parsing by ensuring that invalid YAML
         // doesn't throw immediately during construction
-        val validYaml = """
+        val validYaml =
+            """
             features:
               test_feature: true
-        """.trimIndent()
+            """.trimIndent()
 
         // Should not throw during construction
         val source = YamlSource.fromString(validYaml)
@@ -540,7 +567,8 @@ class YamlSourceTest {
 
     @Test
     fun `yaml with mixed simple and complex format`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               simple_feature: true
               complex_feature:
@@ -549,7 +577,7 @@ class YamlSourceTest {
                 metadata:
                   owner: "team-a"
               another_simple: yes
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -573,13 +601,14 @@ class YamlSourceTest {
 
     @Test
     fun `yaml feature with metadata but no enabled field defaults to false`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               metadata_only:
                 metadata:
                   owner: "team-x"
                   version: "2.0"
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 
@@ -594,13 +623,14 @@ class YamlSourceTest {
 
     @Test
     fun `yaml source provides correct source name for all features`() {
-        val yamlContent = """
+        val yamlContent =
+            """
             features:
               feature1: true
               feature2:
                 enabled: false
                 description: "Test"
-        """.trimIndent()
+            """.trimIndent()
 
         val source = YamlSource.fromString(yamlContent)
 

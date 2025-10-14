@@ -62,7 +62,6 @@ public class YamlSource private constructor(
     private val yamlContent: String,
     override val priority: Int = DEFAULT_PRIORITY,
 ) : FeatureSource {
-
     /**
      * Thread-safe cache of parsed features using persistent (immutable) map.
      *
@@ -168,11 +167,10 @@ public class YamlSource private constructor(
             throw YamlParseException(
                 message = "Failed to parse YAML content",
                 cause = e,
-                line = extractLineNumberFromException(e)
+                line = extractLineNumberFromException(e),
             )
         }
     }
-
 
     public companion object {
         private const val DEFAULT_PRIORITY = 120
@@ -192,7 +190,6 @@ public class YamlSource private constructor(
             return YamlSource(content, priority)
         }
 
-
         /**
          *  Creates YamlSource from resource.
          *
@@ -210,7 +207,5 @@ public class YamlSource private constructor(
 
             return YamlSource(content, priority)
         }
-
     }
 }
-

@@ -10,14 +10,14 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class FeatureSourceTest {
-
     @Test
     fun `feature source interface default implementations`() {
-        val basicSource = object : FeatureSource {
-            override val sourceName: String = "custom"
+        val basicSource =
+            object : FeatureSource {
+                override val sourceName: String = "custom"
 
-            override fun get(key: String): FeatureFlag? = null
-        }
+                override fun get(key: String): FeatureFlag? = null
+            }
 
         // Test default implementations
         assertEquals(0, basicSource.priority)
@@ -29,19 +29,23 @@ class FeatureSourceTest {
 
     @Test
     fun `custom feature source implementation`() {
-        val customSource = object : FeatureSource {
-            override val priority = 150
-            override val sourceName: String = "custom"
-            override fun get(key: String): FeatureFlag? {
-                return if (key == "custom_feature") {
-                    FeatureFlag(key, true, "custom")
-                } else null
-            }
+        val customSource =
+            object : FeatureSource {
+                override val priority = 150
+                override val sourceName: String = "custom"
 
-            override fun getAll(): List<FeatureFlag> {
-                return listOf(FeatureFlag("custom_feature", true, "custom"))
+                override fun get(key: String): FeatureFlag? {
+                    return if (key == "custom_feature") {
+                        FeatureFlag(key, true, "custom")
+                    } else {
+                        null
+                    }
+                }
+
+                override fun getAll(): List<FeatureFlag> {
+                    return listOf(FeatureFlag("custom_feature", true, "custom"))
+                }
             }
-        }
 
         assertEquals(150, customSource.priority)
 
@@ -60,14 +64,16 @@ class FeatureSourceTest {
     @Test
     fun `feature source with async refresh`() {
         var refreshCalled = false
-        val asyncSource = object : FeatureSource {
-            override val sourceName: String = "custom"
-            override fun get(key: String): FeatureFlag? = null
+        val asyncSource =
+            object : FeatureSource {
+                override val sourceName: String = "custom"
 
-            override suspend fun refresh() {
-                refreshCalled = true
+                override fun get(key: String): FeatureFlag? = null
+
+                override suspend fun refresh() {
+                    refreshCalled = true
+                }
             }
-        }
 
         runBlocking { asyncSource.refresh() }
         assertTrue(refreshCalled)
@@ -75,22 +81,28 @@ class FeatureSourceTest {
 
     @Test
     fun `feature source priority comparison`() {
-        val highPrioritySource = object : FeatureSource {
-            override val priority = 300
-            override val sourceName: String = "custom"
-            override fun get(key: String): FeatureFlag? = null
-        }
+        val highPrioritySource =
+            object : FeatureSource {
+                override val priority = 300
+                override val sourceName: String = "custom"
 
-        val lowPrioritySource = object : FeatureSource {
-            override val priority = 100
-            override val sourceName: String = "custom"
-            override fun get(key: String): FeatureFlag? = null
-        }
+                override fun get(key: String): FeatureFlag? = null
+            }
 
-        val defaultPrioritySource = object : FeatureSource {
-            override val sourceName: String = "custom"
-            override fun get(key: String): FeatureFlag? = null
-        }
+        val lowPrioritySource =
+            object : FeatureSource {
+                override val priority = 100
+                override val sourceName: String = "custom"
+
+                override fun get(key: String): FeatureFlag? = null
+            }
+
+        val defaultPrioritySource =
+            object : FeatureSource {
+                override val sourceName: String = "custom"
+
+                override fun get(key: String): FeatureFlag? = null
+            }
 
         assertTrue(highPrioritySource.priority > lowPrioritySource.priority)
         assertTrue(lowPrioritySource.priority > defaultPrioritySource.priority)
@@ -98,23 +110,28 @@ class FeatureSourceTest {
 
     @Test
     fun `feature source with metadata`() {
-        val metadataSource = object : FeatureSource {
-            override val sourceName: String = "custom"
-            override fun get(key: String): FeatureFlag? {
-                return if (key == "metadata_feature") {
-                    FeatureFlag(
-                        key = key,
-                        enabled = true,
-                        source = "metadata_source",
-                        metadata = mapOf(
-                            "version" to "2.0",
-                            "experiment" to "test_exp",
-                            "rollout" to "30%"
+        val metadataSource =
+            object : FeatureSource {
+                override val sourceName: String = "custom"
+
+                override fun get(key: String): FeatureFlag? {
+                    return if (key == "metadata_feature") {
+                        FeatureFlag(
+                            key = key,
+                            enabled = true,
+                            source = "metadata_source",
+                            metadata =
+                                mapOf(
+                                    "version" to "2.0",
+                                    "experiment" to "test_exp",
+                                    "rollout" to "30%",
+                                ),
                         )
-                    )
-                } else null
+                    } else {
+                        null
+                    }
+                }
             }
-        }
 
         val feature = metadataSource.get("metadata_feature")
         assertEquals("2.0", feature?.metadata?.get("version"))
@@ -124,10 +141,12 @@ class FeatureSourceTest {
 
     @Test
     fun `feature source returning null for unknown keys`() {
-        val nullSource = object : FeatureSource {
-            override val sourceName: String = "custom"
-            override fun get(key: String): FeatureFlag? = null
-        }
+        val nullSource =
+            object : FeatureSource {
+                override val sourceName: String = "custom"
+
+                override fun get(key: String): FeatureFlag? = null
+            }
 
         assertNull(nullSource.get("any_key"))
         assertNull(nullSource.get(""))
@@ -136,25 +155,26 @@ class FeatureSourceTest {
 
     @Test
     fun `feature source with conditional logic`() {
-        val conditionalSource = object : FeatureSource {
-            override val sourceName: String = "custom"
-            private val enabledFeatures = setOf("enabled_1", "enabled_2", "enabled_3")
+        val conditionalSource =
+            object : FeatureSource {
+                override val sourceName: String = "custom"
+                private val enabledFeatures = setOf("enabled_1", "enabled_2", "enabled_3")
 
-            override fun get(key: String): FeatureFlag? {
-                return if (key in enabledFeatures) {
-                    FeatureFlag(key, true, "conditional")
-                } else if (key.startsWith("disabled_")) {
-                    FeatureFlag(key, false, "conditional")
-                } else {
-                    null
+                override fun get(key: String): FeatureFlag? {
+                    return if (key in enabledFeatures) {
+                        FeatureFlag(key, true, "conditional")
+                    } else if (key.startsWith("disabled_")) {
+                        FeatureFlag(key, false, "conditional")
+                    } else {
+                        null
+                    }
+                }
+
+                override fun getAll(): List<FeatureFlag> {
+                    return enabledFeatures.map { FeatureFlag(it, true, "conditional") } +
+                        listOf(FeatureFlag("disabled_example", false, "conditional"))
                 }
             }
-
-            override fun getAll(): List<FeatureFlag> {
-                return enabledFeatures.map { FeatureFlag(it, true, "conditional") } +
-                        listOf(FeatureFlag("disabled_example", false, "conditional"))
-            }
-        }
 
         // Test enabled features
         assertTrue(conditionalSource.get("enabled_1")?.enabled ?: false)

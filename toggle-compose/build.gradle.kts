@@ -1,5 +1,4 @@
 
-import org.gradle.kotlin.dsl.publishing
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
@@ -9,12 +8,10 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.vanniktech.publish)
-
 }
 
 kotlin {
     explicitApi()
-
 
     androidTarget {
         compilations.all {
@@ -30,7 +27,7 @@ kotlin {
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach {
         it.binaries.framework {
             baseName = "toggle-compose"
@@ -70,7 +67,6 @@ kotlin {
             }
         }
     }
-
 }
 
 android {
@@ -85,13 +81,13 @@ android {
     }
 }
 
-
-val localProperties = Properties().apply {
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        load(localPropertiesFile.inputStream())
+val localProperties =
+    Properties().apply {
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            load(localPropertiesFile.inputStream())
+        }
     }
-}
 
 localProperties.forEach { key, value ->
     val keyString = key.toString()
@@ -109,7 +105,6 @@ localProperties.forEach { key, value ->
         }
     }
 }
-
 
 mavenPublishing {
     publishToMavenCentral()

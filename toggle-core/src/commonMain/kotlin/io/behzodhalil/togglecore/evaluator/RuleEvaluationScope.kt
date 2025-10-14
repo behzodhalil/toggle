@@ -1,9 +1,8 @@
 package io.behzodhalil.togglecore.evaluator
 
-import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.context.ToggleContext
+import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.core.ToggleInternal
-
 
 @ToggleInternal
 public class RuleEvaluationScope internal constructor() {
@@ -24,7 +23,7 @@ public class RuleEvaluationScope internal constructor() {
     }
 
     public inner class ConditionalBuilder(
-        private val predicate: (FeatureFlag, ToggleContext) -> Boolean
+        private val predicate: (FeatureFlag, ToggleContext) -> Boolean,
     ) {
         public infix fun then(evaluator: RuleEvaluator) {
             evaluators.add(ConditionalRuleEvaluator(predicate, evaluator))

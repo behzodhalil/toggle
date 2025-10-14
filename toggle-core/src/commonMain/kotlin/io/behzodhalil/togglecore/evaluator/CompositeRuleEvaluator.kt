@@ -1,7 +1,7 @@
 package io.behzodhalil.togglecore.evaluator
 
-import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.context.ToggleContext
+import io.behzodhalil.togglecore.core.FeatureFlag
 
 /**
  * Chains multiple evaluators, applying them in sequence.
@@ -30,9 +30,8 @@ import io.behzodhalil.togglecore.context.ToggleContext
  * @property evaluators List of evaluators to apply in order
  */
 public class CompositeRuleEvaluator(
-    private val evaluators: List<RuleEvaluator>
+    private val evaluators: List<RuleEvaluator>,
 ) : RuleEvaluator {
-
     public constructor(vararg evaluators: RuleEvaluator) : this(evaluators.toList())
 
     init {
@@ -41,7 +40,10 @@ public class CompositeRuleEvaluator(
         }
     }
 
-    override fun evaluate(flag: FeatureFlag, context: ToggleContext): FeatureFlag {
+    override fun evaluate(
+        flag: FeatureFlag,
+        context: ToggleContext,
+    ): FeatureFlag {
         return evaluators.fold(flag) { currentFlag, evaluator ->
             evaluator.evaluate(currentFlag, context)
         }

@@ -1,10 +1,9 @@
 package io.behzodhalil.togglecore
 
-
-import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.context.AttributeValue
 import io.behzodhalil.togglecore.context.ToggleContext
 import io.behzodhalil.togglecore.context.getBooleanAttribute
+import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.evaluator.NoOpRuleEvaluator
 import io.behzodhalil.togglecore.evaluator.RuleEvaluator
 import kotlin.test.Test
@@ -13,7 +12,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class FeatureEvaluatorTest {
-
     @Test
     fun `given default evaluator when evaluating feature then returns feature unchanged`() {
         // Given
@@ -46,15 +44,19 @@ class FeatureEvaluatorTest {
     @Test
     fun `given custom evaluator with user role check when evaluating then modifies state based on role`() {
         // Given
-        val evaluator = object : RuleEvaluator {
-            override fun evaluate(flag: FeatureFlag, context: ToggleContext): FeatureFlag {
-                return if (context.userId == "admin") {
-                    flag.copy(enabled = true)
-                } else {
-                    flag.copy(enabled = false)
+        val evaluator =
+            object : RuleEvaluator {
+                override fun evaluate(
+                    flag: FeatureFlag,
+                    context: ToggleContext,
+                ): FeatureFlag {
+                    return if (context.userId == "admin") {
+                        flag.copy(enabled = true)
+                    } else {
+                        flag.copy(enabled = false)
+                    }
                 }
             }
-        }
         val adminContext = ToggleContext(userId = "admin")
         val userContext = ToggleContext(userId = "user")
         val featureFlag = FeatureFlag("admin_feature", false, "source")
@@ -71,16 +73,20 @@ class FeatureEvaluatorTest {
     @Test
     fun `given evaluator with country whitelist when evaluating then enables only for allowed countries`() {
         // Given
-        val evaluator = object : RuleEvaluator {
-            override fun evaluate(flag: FeatureFlag, context: ToggleContext): FeatureFlag {
-                val allowedCountries = setOf("US", "CA", "UK")
-                return if (context.country in allowedCountries) {
-                    flag
-                } else {
-                    flag.copy(enabled = false)
+        val evaluator =
+            object : RuleEvaluator {
+                override fun evaluate(
+                    flag: FeatureFlag,
+                    context: ToggleContext,
+                ): FeatureFlag {
+                    val allowedCountries = setOf("US", "CA", "UK")
+                    return if (context.country in allowedCountries) {
+                        flag
+                    } else {
+                        flag.copy(enabled = false)
+                    }
                 }
             }
-        }
         val usContext = ToggleContext(country = "US")
         val deContext = ToggleContext(country = "DE")
         val featureFlag = FeatureFlag("geo_feature", true, "source")
@@ -97,18 +103,22 @@ class FeatureEvaluatorTest {
     @Test
     fun `given evaluator with version check when evaluating then enables only for minimum version`() {
         // Given
-        val evaluator = object : RuleEvaluator {
-            override fun evaluate(flag: FeatureFlag, context: ToggleContext): FeatureFlag {
-                val minVersion = "2.0.0"
-                val currentVersion = context.appVersion
+        val evaluator =
+            object : RuleEvaluator {
+                override fun evaluate(
+                    flag: FeatureFlag,
+                    context: ToggleContext,
+                ): FeatureFlag {
+                    val minVersion = "2.0.0"
+                    val currentVersion = context.appVersion
 
-                return if (currentVersion != null && currentVersion >= minVersion) {
-                    flag
-                } else {
-                    flag.copy(enabled = false)
+                    return if (currentVersion != null && currentVersion >= minVersion) {
+                        flag
+                    } else {
+                        flag.copy(enabled = false)
+                    }
                 }
             }
-        }
         val newVersionContext = ToggleContext(appVersion = "2.1.0")
         val oldVersionContext = ToggleContext(appVersion = "1.9.0")
         val noVersionContext = ToggleContext()
@@ -128,17 +138,21 @@ class FeatureEvaluatorTest {
     @Test
     fun `given evaluator with custom attribute check when evaluating then uses attribute value`() {
         // Given
-        val evaluator = object : RuleEvaluator {
-            override fun evaluate(flag: FeatureFlag, context: ToggleContext): FeatureFlag {
-                val isBetaUser = context.getBooleanAttribute("betaUser")
+        val evaluator =
+            object : RuleEvaluator {
+                override fun evaluate(
+                    flag: FeatureFlag,
+                    context: ToggleContext,
+                ): FeatureFlag {
+                    val isBetaUser = context.getBooleanAttribute("betaUser")
 
-                return if (isBetaUser) {
-                    flag
-                } else {
-                    flag.copy(enabled = false)
+                    return if (isBetaUser) {
+                        flag
+                    } else {
+                        flag.copy(enabled = false)
+                    }
                 }
             }
-        }
         val betaContext =
             ToggleContext(attributes = mapOf("betaUser" to AttributeValue.BooleanValue(true)))
         val regularContext =

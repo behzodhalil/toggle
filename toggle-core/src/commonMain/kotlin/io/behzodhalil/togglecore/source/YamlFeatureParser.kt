@@ -43,7 +43,6 @@ import io.behzodhalil.togglecore.error.YamlParseException
  * @see YamlSource
  */
 internal class YamlFeatureParser(private val content: String) {
-
     private val lines: List<String> = content.lines()
     private var currentLineIndex: Int = 0
 
@@ -108,11 +107,12 @@ internal class YamlFeatureParser(private val content: String) {
                         } else {
                             // Single-line simple feature - strip inline comments
                             val cleanValue = stripInlineComment(valueAfterColon)
-                            features[key] = FeatureFlag(
-                                key = key,
-                                enabled = parseBoolean(cleanValue, currentLineIndex),
-                                source = SOURCE_NAME
-                            )
+                            features[key] =
+                                FeatureFlag(
+                                    key = key,
+                                    enabled = parseBoolean(cleanValue, currentLineIndex),
+                                    source = SOURCE_NAME,
+                                )
                             currentLineIndex++
                         }
                     } else {
@@ -128,7 +128,7 @@ internal class YamlFeatureParser(private val content: String) {
         if (features.isEmpty()) {
             throwParseError(
                 "YAML must contain at least one feature in 'features:' section",
-                lineNumber = null
+                lineNumber = null,
             )
         }
 
@@ -151,7 +151,10 @@ internal class YamlFeatureParser(private val content: String) {
      * @param parentIndentation Indentation of parent feature key
      * @return ComplexFeatureData containing parsed fields and final line index
      */
-    private fun parseComplexFeature(startIndex: Int, parentIndentation: Int): ComplexFeatureData {
+    private fun parseComplexFeature(
+        startIndex: Int,
+        parentIndentation: Int,
+    ): ComplexFeatureData {
         var enabled = false
         var description: String? = null
         val metadata = mutableMapOf<String, String>()
@@ -183,9 +186,10 @@ internal class YamlFeatureParser(private val content: String) {
                 trimmed.startsWith("description:") -> {
                     val value = trimmed.substringAfter("description:").trim()
                     val cleanValue = stripInlineComment(value)
-                    description = cleanValue
-                        .removeSurrounding("\"")
-                        .removeSurrounding("'")
+                    description =
+                        cleanValue
+                            .removeSurrounding("\"")
+                            .removeSurrounding("'")
                 }
 
                 trimmed.startsWith("metadata:") -> {
@@ -207,7 +211,7 @@ internal class YamlFeatureParser(private val content: String) {
             enabled = enabled,
             description = description,
             metadata = metadata,
-            lastLineIndex = lineIndex
+            lastLineIndex = lineIndex,
         )
     }
 
@@ -229,7 +233,7 @@ internal class YamlFeatureParser(private val content: String) {
     private fun parseMetadataSection(
         startIndex: Int,
         parentIndentation: Int,
-        output: MutableMap<String, String>
+        output: MutableMap<String, String>,
     ): Int {
         var lineIndex = startIndex
 
@@ -254,9 +258,10 @@ internal class YamlFeatureParser(private val content: String) {
                 val parts = trimmed.split(":", limit = 2)
                 if (parts.size == 2) {
                     val key = parts[0].trim()
-                    val value = parts[1].trim()
-                        .removeSurrounding("\"")
-                        .removeSurrounding("'")
+                    val value =
+                        parts[1].trim()
+                            .removeSurrounding("\"")
+                            .removeSurrounding("'")
 
                     if (key.isNotBlank()) {
                         output[key] = value
@@ -308,7 +313,10 @@ internal class YamlFeatureParser(private val content: String) {
      * @return Parsed boolean value
      * @throws YamlParseException if value is not a recognized boolean format
      */
-    private fun parseBoolean(value: String, lineNumber: Int): Boolean {
+    private fun parseBoolean(
+        value: String,
+        lineNumber: Int,
+    ): Boolean {
         return when (value.lowercase().trim()) {
             "true", "yes", "on", "1" -> true
             "false", "no", "off", "0" -> false
@@ -323,10 +331,13 @@ internal class YamlFeatureParser(private val content: String) {
      * @param lineNumber Line number where error occurred (null for general errors)
      * @throws YamlParseException always
      */
-    private fun throwParseError(message: String, lineNumber: Int?): Nothing {
+    private fun throwParseError(
+        message: String,
+        lineNumber: Int?,
+    ): Nothing {
         throw YamlParseException(
             message = message,
-            line = lineNumber?.let { it + 1 } // Convert 0-based to 1-based for user display
+            line = lineNumber?.let { it + 1 },
         )
     }
 
@@ -342,7 +353,7 @@ internal class YamlFeatureParser(private val content: String) {
         val enabled: Boolean,
         val description: String?,
         val metadata: Map<String, String>,
-        val lastLineIndex: Int
+        val lastLineIndex: Int,
     ) {
         /**
          * Converts parsed data into FeatureFlag instance.
@@ -357,7 +368,7 @@ internal class YamlFeatureParser(private val content: String) {
                 key = key,
                 enabled = enabled,
                 source = SOURCE_NAME,
-                metadata = allMetadata
+                metadata = allMetadata,
             )
         }
     }

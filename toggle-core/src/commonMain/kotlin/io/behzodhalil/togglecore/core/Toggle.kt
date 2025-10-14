@@ -6,16 +6,16 @@ import io.behzodhalil.togglecore.logger.ToggleLogger
 import io.behzodhalil.togglecore.resolver.CachingFeatureResolver
 import io.behzodhalil.togglecore.resolver.FeatureResolver
 import io.behzodhalil.togglecore.source.FeatureSource
+import kotlinx.atomicfu.atomic
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.withContext
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlin.time.Duration.Companion.seconds
 
@@ -111,7 +111,6 @@ public class Toggle private constructor(
     private val logger: ToggleLogger?,
     private val scope: CoroutineScope,
 ) : AutoCloseable {
-
     /**
      * Lifecycle state using atomic for thread-safe transitions.
      */
@@ -269,55 +268,57 @@ public class Toggle private constructor(
      *
      * @return [Result.success] if at least one source refreshed, [Result.failure] if all failed
      */
-    public suspend fun refresh(): Result<Unit> = runCatching {
-        checkActive()
+    public suspend fun refresh(): Result<Unit> =
+        runCatching {
+            checkActive()
 
-        withContext(Dispatchers.Default) {
-            logger?.log("Starting refresh of ${sources.size} source(s)")
+            withContext(Dispatchers.Default) {
+                logger?.log("Starting refresh of ${sources.size} source(s)")
 
-            cachingResolver?.invalidateAll()
+                cachingResolver?.invalidateAll()
 
-            // Parallel refresh with timeout
-            val results = sources.map { source ->
-                async {
-                    try {
-                        withTimeout(30.seconds) {
-                            source.refresh()
-                            SourceRefreshResult.Success(source.sourceName)
+                // Parallel refresh with timeout
+                val results =
+                    sources.map { source ->
+                        async {
+                            try {
+                                withTimeout(30.seconds) {
+                                    source.refresh()
+                                    SourceRefreshResult.Success(source.sourceName)
+                                }
+                            } catch (e: TimeoutCancellationException) {
+                                SourceRefreshResult.Failure(
+                                    source.sourceName,
+                                    e,
+                                )
+                            } catch (e: Exception) {
+                                SourceRefreshResult.Failure(source.sourceName, e)
+                            }
                         }
-                    } catch (e: TimeoutCancellationException) {
-                        SourceRefreshResult.Failure(
-                            source.sourceName,
-                            e
-                        )
-                    } catch (e: Exception) {
-                        SourceRefreshResult.Failure(source.sourceName, e)
+                    }.awaitAll()
+
+                // Log results
+                results.forEach { result ->
+                    when (result) {
+                        is SourceRefreshResult.Success ->
+                            logger?.log("✓ Refreshed source: ${result.sourceName}")
+                        is SourceRefreshResult.Failure ->
+                            logger?.log("✗ Failed: '${result.sourceName}': ${result.error.message}", result.error)
                     }
                 }
-            }.awaitAll()
 
-            // Log results
-            results.forEach { result ->
-                when (result) {
-                    is SourceRefreshResult.Success ->
-                        logger?.log("✓ Refreshed source: ${result.sourceName}")
-                    is SourceRefreshResult.Failure ->
-                        logger?.log("✗ Failed: '${result.sourceName}': ${result.error.message}", result.error)
+                val failures = results.filterIsInstance<SourceRefreshResult.Failure>()
+                if (failures.size == sources.size && failures.isNotEmpty()) {
+                    throw RefreshException(
+                        message = "All ${sources.size} source(s) failed to refresh",
+                        failures = failures.map { it.error },
+                    )
                 }
-            }
 
-            val failures = results.filterIsInstance<SourceRefreshResult.Failure>()
-            if (failures.size == sources.size && failures.isNotEmpty()) {
-                throw RefreshException(
-                    message = "All ${sources.size} source(s) failed to refresh",
-                    failures = failures.map { it.error }
-                )
+                val successCount = results.size - failures.size
+                logger?.log("Refresh complete: $successCount/${results.size} source(s) succeeded")
             }
-
-            val successCount = results.size - failures.size
-            logger?.log("Refresh complete: $successCount/${results.size} source(s) succeeded")
         }
-    }
 
     /**
      * Invalidates the cached result for a specific feature.
@@ -417,7 +418,7 @@ public class Toggle private constructor(
             }.onFailure { error ->
                 logger?.log(
                     "Failed to close source '${source.sourceName}': ${error.message}",
-                    error
+                    error,
                 )
             }
         }
@@ -446,7 +447,7 @@ public class Toggle private constructor(
         ACTIVE,
 
         /** Toggle has been disposed and cannot be used. */
-        DISPOSED
+        DISPOSED,
     }
 
     /**
@@ -454,6 +455,7 @@ public class Toggle private constructor(
      */
     private sealed interface SourceRefreshResult {
         data class Success(val sourceName: String) : SourceRefreshResult
+
         data class Failure(val sourceName: String, val error: Exception) : SourceRefreshResult
     }
 
@@ -482,9 +484,8 @@ public class Toggle private constructor(
                 cachingResolver = cachingResolver,
                 sources = sources.toImmutableList(),
                 logger = logger,
-                scope = scope
+                scope = scope,
             )
         }
     }
 }
-

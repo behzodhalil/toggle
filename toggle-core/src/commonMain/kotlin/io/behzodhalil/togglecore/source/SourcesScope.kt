@@ -34,9 +34,12 @@ public class SourcesScope internal constructor() {
     /**
      * Add custom source with priority
      */
-    public fun new(priority: Int, sourceFactory: () -> FeatureSource) {
+    public fun new(
+        priority: Int,
+        sourceFactory: () -> FeatureSource,
+    ) {
         val source = sourceFactory()
-        sources.add(PriorityFeatureSource(source, priority))
+        sources.add(PrioritySource(source, priority))
     }
 
     internal fun build(): List<FeatureSource> = sources.toList()

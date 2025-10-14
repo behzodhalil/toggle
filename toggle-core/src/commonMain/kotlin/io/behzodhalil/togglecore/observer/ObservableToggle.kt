@@ -198,7 +198,10 @@ public interface ObservableToggle : AutoCloseable {
      * @param observer Callback invoked on state changes
      * @return Unsubscribe function - call to remove the observer
      */
-    public fun addObserver(featureKey: String, observer: FeatureObserver): () -> Unit
+    public fun addObserver(
+        featureKey: String,
+        observer: FeatureObserver,
+    ): () -> Unit
 
     /**
      * Refreshes all features from their underlying sources.
@@ -328,7 +331,7 @@ public class ObservableToggleScope internal constructor() {
             scope = actualScope,
             bufferCapacity = bufferCapacity,
             logger = actualLogger,
-            ownScope = shouldOwnScope
+            ownScope = shouldOwnScope,
         )
     }
 }
@@ -361,7 +364,7 @@ internal class DefaultObservableToggle(
     private val scope: CoroutineScope,
     private val bufferCapacity: Int,
     private val logger: ToggleLogger,
-    private val ownScope: Boolean
+    private val ownScope: Boolean,
 ) : ObservableToggle {
     // Concurrent map for thread-safe observer management
     // Using AtomicFu locks for multiplatform compatibility
@@ -375,11 +378,12 @@ internal class DefaultObservableToggle(
         get() = _features.asStateFlow()
 
     // Backing field for changes SharedFlow
-    private val _changes = MutableSharedFlow<FeatureChangeEvent>(
-        replay = 0,
-        extraBufferCapacity = bufferCapacity,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
+    private val _changes =
+        MutableSharedFlow<FeatureChangeEvent>(
+            replay = 0,
+            extraBufferCapacity = bufferCapacity,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
 
     override val changes: SharedFlow<FeatureChangeEvent>
         get() = _changes.asSharedFlow()
@@ -423,14 +427,15 @@ internal class DefaultObservableToggle(
         if (cached != null) return cached
 
         // Create new flow
-        val featureFlow = features
-            .map { states -> states[key] == true }
-            .distinctUntilChanged()
-            .stateIn(
-                scope = scope,
-                started = SharingStarted.Lazily,
-                initialValue = isEnabled(feature)
-            )
+        val featureFlow =
+            features
+                .map { states -> states[key] == true }
+                .distinctUntilChanged()
+                .stateIn(
+                    scope = scope,
+                    started = SharingStarted.Lazily,
+                    initialValue = isEnabled(feature),
+                )
 
         // Cache it with double-check pattern
         return observersLock.withLock {
@@ -438,7 +443,10 @@ internal class DefaultObservableToggle(
         }
     }
 
-    override fun addObserver(featureKey: String, observer: FeatureObserver): () -> Unit {
+    override fun addObserver(
+        featureKey: String,
+        observer: FeatureObserver,
+    ): () -> Unit {
         observersLock.withLock {
             observers.getOrPut(featureKey) { mutableListOf() }.add(observer)
         }
@@ -504,7 +512,10 @@ internal class DefaultObservableToggle(
     /**
      * Compares old and new states and triggers notifications for all changes.
      */
-    private fun notifyChanges(oldStates: ImmutableMap<String, Boolean>, newStates: ImmutableMap<String, Boolean>) {
+    private fun notifyChanges(
+        oldStates: ImmutableMap<String, Boolean>,
+        newStates: ImmutableMap<String, Boolean>,
+    ) {
         val allKeys = oldStates.keys + newStates.keys
         for (key in allKeys) {
             val oldValue = oldStates[key] == true
@@ -519,7 +530,11 @@ internal class DefaultObservableToggle(
      * Notifies all reactive streams and explicit observers of a single feature change.
      */
     @OptIn(ExperimentalTime::class)
-    private fun notifyObservers(key: String, oldValue: Boolean, newValue: Boolean) {
+    private fun notifyObservers(
+        key: String,
+        oldValue: Boolean,
+        newValue: Boolean,
+    ) {
         val event = FeatureChangeEvent(key, oldValue, newValue, Clock.System.now().epochSeconds)
 
         // 1. Emit to reactive SharedFlow stream on the provided scope.

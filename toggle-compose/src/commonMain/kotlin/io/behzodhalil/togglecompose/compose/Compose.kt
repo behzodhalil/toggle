@@ -98,9 +98,10 @@ public fun ObservableToggle.observeAsStateNonLifecycle(feature: FeatureKey): Sta
  */
 @Composable
 public fun rememberToggle(builder: ToggleScope.() -> Unit): Toggle {
-    val toggle = remember {
-        Toggle(builder)
-    }
+    val toggle =
+        remember {
+            Toggle(builder)
+        }
 
     DisposableEffect(toggle) {
         onDispose {
@@ -154,18 +155,19 @@ public fun rememberToggle(builder: ToggleScope.() -> Unit): Toggle {
 @Composable
 public fun rememberObservableToggle(
     toggle: Toggle,
-    configure: (ObservableToggleScope.() -> Unit)? = null
+    configure: (ObservableToggleScope.() -> Unit)? = null,
 ): ObservableToggle {
     val scope = rememberCoroutineScope()
 
-    val observable = remember(toggle) {
-        ObservableToggle {
-            this.toggle = toggle
-            this.scope = scope
-            this.ownScope = false
-            configure?.invoke(this)
+    val observable =
+        remember(toggle) {
+            ObservableToggle {
+                this.toggle = toggle
+                this.scope = scope
+                this.ownScope = false
+                configure?.invoke(this)
+            }
         }
-    }
 
     DisposableEffect(observable) {
         onDispose {

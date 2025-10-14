@@ -39,7 +39,11 @@ public fun interface FeatureObserver {
      * @param oldValue Previous value
      * @param newValue New value
      */
-    public fun onChanged(key: String, oldValue: Boolean, newValue: Boolean)
+    public fun onChanged(
+        key: String,
+        oldValue: Boolean,
+        newValue: Boolean,
+    )
 }
 
 /**
@@ -54,5 +58,5 @@ public data class FeatureChangeEvent(
     val key: String,
     val oldValue: Boolean,
     val newValue: Boolean,
-    val timestamp: Long
+    val timestamp: Long,
 )

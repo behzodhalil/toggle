@@ -1,28 +1,28 @@
 package io.behzodhalil.togglecore
 
+import io.behzodhalil.togglecore.context.ToggleContext
 import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.core.FeatureKey
-import io.behzodhalil.togglecore.context.ToggleContext
-import io.behzodhalil.togglecore.evaluator.RuleEvaluator
 import io.behzodhalil.togglecore.core.Toggle
+import io.behzodhalil.togglecore.evaluator.RuleEvaluator
 import io.behzodhalil.togglecore.source.FeatureSource
 import io.behzodhalil.togglecore.source.MemorySource
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
 class ToggleTest {
-
     @Test
     fun `given a memory source with enabled feature when checking feature state then returns true`() {
         // Given
         val source = MemorySource(mapOf("test_feature" to true))
-        val toggle = Toggle {
-            sources { new(source) }
-        }
+        val toggle =
+            Toggle {
+                sources { new(source) }
+            }
 
         // When & Then
         assertTrue(toggle.isEnabled(FeatureKey.of("test_feature")))
@@ -38,12 +38,13 @@ class ToggleTest {
         val source2 = MemorySource(mapOf("feature2" to false))
 
         // When
-        val toggle = Toggle {
-            sources {
-                new(source1)
-                new(source2)
+        val toggle =
+            Toggle {
+                sources {
+                    new(source1)
+                    new(source2)
+                }
             }
-        }
 
         // Then
         assertTrue(toggle.isEnabled(FeatureKey.of("feature1")))
@@ -55,29 +56,40 @@ class ToggleTest {
     @Test
     fun `given conflicting sources with different priorities when resolving feature then higher priority source wins`() {
         // Given
-        val highPrioritySource = object : FeatureSource {
-            override val sourceName: String = "high_priority_source"
-            override val priority = 300
-            override fun get(key: String) = if (key == "priority_test") {
-                FeatureFlag(key, false, "high_priority")
-            } else null
-        }
+        val highPrioritySource =
+            object : FeatureSource {
+                override val sourceName: String = "high_priority_source"
+                override val priority = 300
 
-        val lowPrioritySource = object : FeatureSource {
-            override val sourceName: String = "low_priority_source"
-            override val priority = 100
-            override fun get(key: String) = if (key == "priority_test") {
-                FeatureFlag(key, true, "low_priority")
-            } else null
-        }
+                override fun get(key: String) =
+                    if (key == "priority_test") {
+                        FeatureFlag(key, false, "high_priority")
+                    } else {
+                        null
+                    }
+            }
+
+        val lowPrioritySource =
+            object : FeatureSource {
+                override val sourceName: String = "low_priority_source"
+                override val priority = 100
+
+                override fun get(key: String) =
+                    if (key == "priority_test") {
+                        FeatureFlag(key, true, "low_priority")
+                    } else {
+                        null
+                    }
+            }
 
         // When
-        val toggle = Toggle {
-            sources {
-                new(lowPrioritySource)
-                new(highPrioritySource)
+        val toggle =
+            Toggle {
+                sources {
+                    new(lowPrioritySource)
+                    new(highPrioritySource)
+                }
             }
-        }
         val feature = toggle.value(FeatureKey.of("priority_test"))
 
         // Then
@@ -90,23 +102,28 @@ class ToggleTest {
     @Test
     fun `given custom evaluator and vip user context when evaluating disabled feature then evaluator enables it`() {
         // Given
-        val customEvaluator = object : RuleEvaluator {
-            override fun evaluate(flag: FeatureFlag, context: ToggleContext): FeatureFlag {
-                return if (context.userId == "vip") {
-                    flag.copy(enabled = true)
-                } else {
-                    flag.copy(enabled = false)
+        val customEvaluator =
+            object : RuleEvaluator {
+                override fun evaluate(
+                    flag: FeatureFlag,
+                    context: ToggleContext,
+                ): FeatureFlag {
+                    return if (context.userId == "vip") {
+                        flag.copy(enabled = true)
+                    } else {
+                        flag.copy(enabled = false)
+                    }
                 }
             }
-        }
         val source = MemorySource(mapOf("vip_feature" to false))
 
         // When
-        val toggle = Toggle {
-            evaluation { evaluator(customEvaluator) }
-            sources { new(source) }
-            context { userId("vip") }
-        }
+        val toggle =
+            Toggle {
+                evaluation { evaluator(customEvaluator) }
+                sources { new(source) }
+                context { userId("vip") }
+            }
 
         // Then
         assertTrue(toggle.isEnabled(FeatureKey.of("vip_feature")))
@@ -118,19 +135,23 @@ class ToggleTest {
     fun `given cached feature when accessing same feature twice then source is queried only once`() {
         // Given
         var evaluationCount = 0
-        val source = object : FeatureSource {
-            override val sourceName: String = "custom_source"
+        val source =
+            object : FeatureSource {
+                override val sourceName: String = "custom_source"
 
-            override fun get(key: String): FeatureFlag? {
-                return if (key == "cached_feature") {
-                    evaluationCount++
-                    FeatureFlag(key, true, "counting_source")
-                } else null
+                override fun get(key: String): FeatureFlag? {
+                    return if (key == "cached_feature") {
+                        evaluationCount++
+                        FeatureFlag(key, true, "counting_source")
+                    } else {
+                        null
+                    }
+                }
             }
-        }
-        val toggle = Toggle {
-            sources { new(source) }
-        }
+        val toggle =
+            Toggle {
+                sources { new(source) }
+            }
 
         // When
         val feature1 = toggle.value(FeatureKey.of("cached_feature"))
@@ -145,51 +166,61 @@ class ToggleTest {
     }
 
     @Test
-    fun `given enabled feature when refreshing source then cache is cleared and new value is used`() = runBlocking {
-        // Given
-        var sourceValue = true
-        val source = object : FeatureSource {
-            override val sourceName: String = "custom_source"
+    fun `given enabled feature when refreshing source then cache is cleared and new value is used`() =
+        runBlocking {
+            // Given
+            var sourceValue = true
+            val source =
+                object : FeatureSource {
+                    override val sourceName: String = "custom_source"
 
-            override fun get(key: String) = if (key == "refreshable") {
-                FeatureFlag(key, sourceValue, "refreshable_source")
-            } else null
+                    override fun get(key: String) =
+                        if (key == "refreshable") {
+                            FeatureFlag(key, sourceValue, "refreshable_source")
+                        } else {
+                            null
+                        }
 
-            override suspend fun refresh() {
-                sourceValue = false // Change value on refresh
-            }
+                    override suspend fun refresh() {
+                        sourceValue = false // Change value on refresh
+                    }
+                }
+            val toggle = Toggle { sources { new(source) } }
+
+            // When - Initial state
+            assertTrue(toggle.isEnabled(FeatureKey.of("refreshable")))
+
+            // When - Refresh
+            toggle.refresh()
+
+            // Then - Should now be false
+            assertFalse(toggle.isEnabled(FeatureKey.of("refreshable")))
+
+            toggle.close()
         }
-        val toggle = Toggle { sources { new(source) } }
-
-        // When - Initial state
-        assertTrue(toggle.isEnabled(FeatureKey.of("refreshable")))
-
-        // When - Refresh
-        toggle.refresh()
-
-        // Then - Should now be false
-        assertFalse(toggle.isEnabled(FeatureKey.of("refreshable")))
-
-        toggle.close()
-    }
 
     @Test
     fun `given failing high priority source when resolving feature then falls back to working lower priority source`() {
         // Given
-        val failingSource = object : FeatureSource {
-            override val sourceName: String = "failing_source"
-            override val priority = 300
-            override fun get(key: String): FeatureFlag? {
-                throw RuntimeException("Source failure")
+        val failingSource =
+            object : FeatureSource {
+                override val sourceName: String = "failing_source"
+                override val priority = 300
+
+                override fun get(key: String): FeatureFlag? {
+                    throw RuntimeException("Source failure")
+                }
             }
-        }
         val workingSource = MemorySource(mapOf("resilient_feature" to true))
 
         // When
-        val toggle = Toggle { sources {
-            new(failingSource)
-            new(workingSource)
-        } }
+        val toggle =
+            Toggle {
+                sources {
+                    new(failingSource)
+                    new(workingSource)
+                }
+            }
 
         // Then - Should fall back to working source
         assertTrue(toggle.isEnabled(FeatureKey.of("resilient_feature")))
@@ -221,10 +252,13 @@ class ToggleTest {
         val key2 = FeatureKey.of("feature2")
         val key3 = FeatureKey.of("feature3")
 
-        val source = MemorySource(mapOf(
-            "feature1" to true,
-            "feature2" to false
-        ))
+        val source =
+            MemorySource(
+                mapOf(
+                    "feature1" to true,
+                    "feature2" to false,
+                ),
+            )
         val toggle = Toggle { sources { new(source) } }
 
         // When
@@ -246,7 +280,7 @@ class ToggleTest {
     fun `given no sources when building toggle then throws IllegalArgumentException`() {
         // When & Then
         assertFailsWith<IllegalArgumentException> {
-            Toggle {  }
+            Toggle { }
         }
     }
 

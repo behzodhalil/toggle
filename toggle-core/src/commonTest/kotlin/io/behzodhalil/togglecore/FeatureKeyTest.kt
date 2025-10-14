@@ -3,11 +3,10 @@ package io.behzodhalil.togglecore
 import io.behzodhalil.togglecore.core.FeatureKey
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class FeatureKeyTest {
-
     @Test
     fun `given predefined feature key when accessing value then returns correct key string`() {
         // Given

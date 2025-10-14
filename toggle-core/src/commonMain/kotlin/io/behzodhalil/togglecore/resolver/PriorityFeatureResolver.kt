@@ -34,8 +34,8 @@ public class PriorityFeatureResolver(
     context: ToggleContext,
     logger: ToggleLogger? = null,
 ) : FeatureResolver by DefaultFeatureResolver(
-    sources = sources.sortedByDescending { it.priority },
-    evaluator = evaluator,
-    context = context,
-    logger = logger
-)
+        sources = sources.sortedByDescending { it.priority },
+        evaluator = evaluator,
+        context = context,
+        logger = logger,
+    )

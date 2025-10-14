@@ -10,14 +10,20 @@ public class MemorySourceScope {
     /**
      * Add feature by string key
      */
-    public fun feature(key: String, enabled: Boolean) {
+    public fun feature(
+        key: String,
+        enabled: Boolean,
+    ) {
         features[key] = enabled
     }
 
     /**
      * Add feature by FeatureKey
      */
-    public fun feature(key: FeatureKey, enabled: Boolean) {
+    public fun feature(
+        key: FeatureKey,
+        enabled: Boolean,
+    ) {
         features[key.value] = enabled
     }
 

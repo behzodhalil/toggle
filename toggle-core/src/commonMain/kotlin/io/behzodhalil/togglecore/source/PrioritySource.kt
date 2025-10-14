@@ -2,11 +2,10 @@ package io.behzodhalil.togglecore.source
 
 import io.behzodhalil.togglecore.core.FeatureFlag
 
-internal class PriorityFeatureSource(
+internal class PrioritySource(
     private val delegate: FeatureSource,
     overridePriority: Int,
 ) : FeatureSource {
-
     override val sourceName: String = DEFAULT_SOURCE_NAME
     override val priority: Int = overridePriority
 

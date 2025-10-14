@@ -85,7 +85,6 @@ public val LocalToggle: ProvidableCompositionLocal<Toggle?> = staticCompositionL
  */
 public val LocalObservableToggle: ProvidableCompositionLocal<ObservableToggle?> = compositionLocalOf { null }
 
-
 /**
  * Extension function to observe a feature using [LocalObservableToggle].
  *
@@ -112,8 +111,9 @@ public val LocalObservableToggle: ProvidableCompositionLocal<ObservableToggle?> 
  */
 @Composable
 public fun observeToggle(feature: FeatureKey): State<Boolean> {
-    val observable = LocalObservableToggle.current
-        ?: error("ObservableToggle not provided. Wrap your composable with ToggleProvider.")
+    val observable =
+        LocalObservableToggle.current
+            ?: error("ObservableToggle not provided. Wrap your composable with ToggleProvider.")
 
     return observable.observeAsState(feature)
 }
@@ -141,8 +141,9 @@ public fun observeToggle(feature: FeatureKey): State<Boolean> {
  */
 @Composable
 public fun isFeatureEnabled(feature: FeatureKey): Boolean {
-    val toggle = LocalToggle.current
-        ?: error("Toggle not provided. Wrap your composable with ToggleProvider.")
+    val toggle =
+        LocalToggle.current
+            ?: error("Toggle not provided. Wrap your composable with ToggleProvider.")
 
     return toggle.isEnabled(feature)
 }

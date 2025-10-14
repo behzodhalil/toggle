@@ -14,9 +14,10 @@ public class YamlParseException(
     cause: Throwable? = null,
     public val line: Int? = null,
 ) : ParseException(
-    message = buildString {
-        append(message)
-        line?.let { append(" at line $it") }
-    },
-    cause = cause
-)
+        message =
+            buildString {
+                append(message)
+                line?.let { append(" at line $it") }
+            },
+        cause = cause,
+    )

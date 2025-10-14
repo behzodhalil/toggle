@@ -14,7 +14,6 @@ import io.behzodhalil.togglecore.core.FeatureFlag
  * ```
  */
 public interface FeatureSource : AutoCloseable {
-
     /**
      * Source identifier for logging and debugging.
      *
@@ -26,7 +25,6 @@ public interface FeatureSource : AutoCloseable {
      * Priority for source ordering. Higher = first.
      */
     public val priority: Int get() = DEFAULT_PRIORITY
-
 
     /**
      * Get feature by key.

@@ -37,7 +37,6 @@ public data class FeatureFlag(
     val metadata: Map<String, String> = emptyMap(),
     val timestamp: Long = Clock.System.now().toEpochMilliseconds(),
 ) {
-
     init {
         require(key.isNotBlank()) {
             "Feature flag key cannot be blank"
@@ -76,7 +75,6 @@ public data class FeatureFlag(
         return copy(source = source, timestamp = Clock.System.now().toEpochMilliseconds())
     }
 
-
     /**
      * Creates with an additional metadata (bulk operation).
      *
@@ -87,7 +85,7 @@ public data class FeatureFlag(
         if (metadata.isEmpty()) return this
         return copy(
             metadata = this.metadata + metadata,
-            timestamp = Clock.System.now().toEpochMilliseconds()
+            timestamp = Clock.System.now().toEpochMilliseconds(),
         )
     }
 
@@ -98,21 +96,29 @@ public data class FeatureFlag(
      *
      * @return Human-readable representation
      */
-    override fun toString(): String = buildString {
-        append("FeatureFlag(")
-        append("key=$key, ")
-        append("enabled=$enabled, ")
-        append("source=$source")
-        if (metadata.isNotEmpty()) {
-            append(", metadata={")
-            append(metadata.entries.joinToString(", ") { "${it.key}=${it.value}" })
-            append("}")
+    override fun toString(): String =
+        buildString {
+            append("FeatureFlag(")
+            append("key=$key, ")
+            append("enabled=$enabled, ")
+            append("source=$source")
+            if (metadata.isNotEmpty()) {
+                append(", metadata={")
+                append(metadata.entries.joinToString(", ") { "${it.key}=${it.value}" })
+                append("}")
+            }
+            append(")")
         }
-        append(")")
-    }
 
     public companion object {
-        public fun enabled(key: String, source: String = "default"): FeatureFlag = FeatureFlag(key, true, source)
-        public fun disabled(key: String, source: String = "default"): FeatureFlag = FeatureFlag(key, false, source)
+        public fun enabled(
+            key: String,
+            source: String = "default",
+        ): FeatureFlag = FeatureFlag(key, true, source)
+
+        public fun disabled(
+            key: String,
+            source: String = "default",
+        ): FeatureFlag = FeatureFlag(key, false, source)
     }
 }

@@ -1,7 +1,7 @@
 package io.behzodhalil.togglecore.evaluator
 
-import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.context.ToggleContext
+import io.behzodhalil.togglecore.core.FeatureFlag
 
 /**
  * Applies evaluation logic only when a predicate matches.
@@ -36,8 +36,10 @@ public class ConditionalRuleEvaluator(
     private val predicate: (FeatureFlag, ToggleContext) -> Boolean,
     private val evaluator: RuleEvaluator,
 ) : RuleEvaluator {
-
-    override fun evaluate(flag: FeatureFlag, context: ToggleContext): FeatureFlag {
+    override fun evaluate(
+        flag: FeatureFlag,
+        context: ToggleContext,
+    ): FeatureFlag {
         return if (predicate(flag, context)) {
             evaluator.evaluate(flag, context)
         } else {
