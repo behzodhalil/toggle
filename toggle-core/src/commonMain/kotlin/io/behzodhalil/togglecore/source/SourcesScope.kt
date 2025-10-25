@@ -1,6 +1,7 @@
 package io.behzodhalil.togglecore.source
 
 import io.behzodhalil.togglecore.core.ToggleInternal
+import io.behzodhalil.togglecore.source.yaml.YamlSourceScope
 
 @ToggleInternal
 public class SourcesScope internal constructor() {

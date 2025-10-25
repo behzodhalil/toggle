@@ -1,7 +1,8 @@
-package io.behzodhalil.togglecore.source
+package io.behzodhalil.togglecore.source.yaml
 
 import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.error.YamlParseException
+import io.behzodhalil.togglecore.source.FeatureSource
 import io.behzodhalil.togglecore.util.getResourceReader
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.reentrantLock
@@ -54,7 +55,7 @@ import kotlinx.collections.immutable.toPersistentMap
  * @property priority Source resolution priority (higher values evaluated first, default: 120)
  * @property sourceName Identifier for logging and debugging (default: "yaml_source")
  *
- * @see FeatureSource
+ * @see io.behzodhalil.togglecore.source.FeatureSource
  * @see YamlParseException
  *
  */
@@ -153,7 +154,7 @@ public class YamlSource private constructor(
      */
     private fun parseAndCache() {
         try {
-            val parser = YamlFeatureParser(yamlContent)
+            val parser = YamlParser(yamlContent)
             val parsed = parser.parse()
 
             // Atomic update: new persistent map

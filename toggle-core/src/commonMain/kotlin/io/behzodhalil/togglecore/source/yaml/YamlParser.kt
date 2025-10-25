@@ -1,4 +1,4 @@
-package io.behzodhalil.togglecore.source
+package io.behzodhalil.togglecore.source.yaml
 
 import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.error.YamlParseException
@@ -42,7 +42,7 @@ import io.behzodhalil.togglecore.error.YamlParseException
  *
  * @see YamlSource
  */
-internal class YamlFeatureParser(private val content: String) {
+internal class YamlParser(private val content: String) {
     private val lines: List<String> = content.lines()
     private var currentLineIndex: Int = 0
 
