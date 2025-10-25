@@ -2,6 +2,8 @@ package io.behzodhalil.togglecore.source
 
 import io.behzodhalil.togglecore.core.FeatureFlag
 import io.behzodhalil.togglecore.core.FeatureKey
+import kotlinx.atomicfu.atomic
+import kotlinx.collections.immutable.toPersistentMap
 
 public class MemorySource(
     features: Map<String, Boolean> = emptyMap(),
@@ -9,10 +11,10 @@ public class MemorySource(
     override val sourceName: String = DEFAULT_SOURCE_NAME
     override val priority: Int = DEFAULT_MEMORY_PRIORITY
 
-    private val features = features.toMutableMap()
+    private val features = atomic( features.toPersistentMap())
 
     override fun get(key: String): FeatureFlag? {
-        return features[key]?.let { enabled ->
+        return features.value[key]?.let { enabled ->
             FeatureFlag(key, enabled, "memory")
         }
     }
@@ -21,7 +23,7 @@ public class MemorySource(
         key: String,
         enabled: Boolean,
     ) {
-        features[key] = enabled
+        features.value.put(key, enabled)
     }
 
     public fun setFeature(
@@ -32,15 +34,15 @@ public class MemorySource(
     }
 
     public fun removeFeature(key: String) {
-        features.remove(key)
+        features.value.remove(key)
     }
 
     public fun clear() {
-        features.clear()
+        features.value.clear()
     }
 
     override fun getAll(): List<FeatureFlag> {
-        return features.map { (key, enabled) ->
+        return features.value.map { (key, enabled) ->
             FeatureFlag(key, enabled, "memory")
         }
     }
